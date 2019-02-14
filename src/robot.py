@@ -5,8 +5,8 @@ from src.helper import *
 class Robot():
 	def __init__(self, WIDTH, HEIGHT, walls):
 		self.x = 300
-		self.y = 100
-		self.theta = 0
+		self.y = 200
+		self.theta = 10
 		self.radius = 30
 		self.speed = [5, -5]
 
@@ -35,10 +35,22 @@ class Robot():
 					sensor.value = dist
 					sensor.p2 = crossover
 
+			# Check for wall collisions
+			if self.radius > dist + 0.0005:
+				moveback = point_from_angle(self.x, self.y, sensor_bearing, -(self.radius - dist))
+				self.x = moveback[0]
+				self.y = moveback[1]
+
+				self.check_sensors()
+
 	def update_position(self, time):
 		""" Apply the wheel velocity to the robot position using the elapsed time """
-		# self.x += self.speed[0] * time
-		# self.y += self.speed[1] * time
+		self.x += self.speed[0] * time
+		self.y += self.speed[1] * time
+
+		self.theta += time*5
+		if self.theta > 360:
+			self.theta = 0
 		# TODO: For bulat, play with you physics here
 		# if self.rect.left <= 0 or self.rect.right >= self.width:
 		# 	# When colliding with wall on the left, rebound

@@ -80,12 +80,27 @@ class GFX:
 			sys.exit(0)
 		elif events.type == KEYUP:
 			# TODO: add controls here
-			pass
+			if events.key == K_w:
+				self.robot.speed[0] += 1  # Left wheel increment (todo: apply max velocity)
+			elif events.key == K_s:
+				self.robot.speed[0] -= 1  # Left wheel decrement
+			elif events.key == K_o:
+				self.robot.speed[1] += 1  # Right wheel increment
+			elif events.key == K_l:
+				self.robot.speed[1] -= 1  # Right wheel decrement
+			elif events.key == K_x:
+				self.robot.speed = [0, 0]  # Set to 0
+			elif events.key == K_t:
+				self.robot.speed[0] += 1  # Both increment
+				self.robot.speed[1] += 1  # Both increment
+			elif events.key == K_g:
+				self.robot.speed[0] -= 1  # Both decrement
+				self.robot.speed[1] -= 1  # Both decrement
 
 	def update(self):
 		# Update robot step
 		time_diff = datetime.now() - self.start_time
-		time_diff = time_diff.total_seconds()
+		time_diff = time_diff.total_seconds() / 1000  # Time in ms
 		self.robot.update_position(time_diff)
 
 		# Check wall intersections
@@ -112,7 +127,13 @@ class GFX:
 
 		# Robot
 		pygame.draw.circle(self.screen, blue, self.robot.get_pos(), self.robot.radius, 0)
-		pygame.draw.line(self.screen, black, (self.robot.x, self.robot.y), (point_from_angle(self.robot.x, self.robot.y, self.robot.theta, self.robot.radius)), 2)
+		pygame.draw.line(self.screen, black, (self.robot.x, self.robot.y), point_from_angle(self.robot.x, self.robot.y, self.robot.theta, self.robot.radius), 2)
+
+		# Wheel speeds
+		textsurface = font.render("left wheel: {0:.0f}".format(self.robot.speed[0]), False, red)  # Left
+		self.screen.blit(textsurface, (30, HEIGHT-100))
+		textsurface = font.render("rigth wheel: {0:.0f}".format(self.robot.speed[1]), False, red)  # Right
+		self.screen.blit(textsurface, (30, HEIGHT-80))
 
 		pygame.display.update()
 
