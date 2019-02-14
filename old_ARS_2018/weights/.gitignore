@@ -1,0 +1,4 @@
+weights_*
+!saved/weights_*
+
+# Move weights to saved/ if you want to upload them to git
