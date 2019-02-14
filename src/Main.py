@@ -1,3 +1,3 @@
-import gui
+from src.gui import GFX
 
-gui.main()
+gui = GFX()
