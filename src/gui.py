@@ -11,7 +11,7 @@ from src.wall import Wall
 from src.helper import *
 
 WIDTH = 1040
-HEIGHT = 880
+HEIGHT = 600
 
 # some colors
 black = (0, 0, 0)
@@ -27,6 +27,12 @@ class GFX:
 	def __init__(self):
 		# Outer walls
 		padding = 20
+		self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
+		self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
+		self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
+		self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+
+		padding = 200
 		self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
 		self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
 		self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
@@ -63,6 +69,7 @@ class GFX:
 		# background = load_image("../images/background.png")
 
 		self.start_time = datetime.now()
+		self.last_time = datetime.now()
 
 		while True:
 			# Handle inputs
@@ -99,8 +106,11 @@ class GFX:
 
 	def update(self):
 		# Update robot step
-		time_diff = datetime.now() - self.start_time
-		time_diff = time_diff.total_seconds() / 1000  # Time in ms
+		now = datetime.now()
+		time_diff = now - self.last_time
+		time_diff = time_diff.total_seconds()
+		self.last_time = now
+		print(time_diff)
 		self.robot.update_position(time_diff)
 
 		# Check wall intersections

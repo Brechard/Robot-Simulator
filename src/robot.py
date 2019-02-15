@@ -4,7 +4,7 @@ from src.helper import *
 
 class Robot():
 	def __init__(self, WIDTH, HEIGHT, walls):
-		self.x = 300
+		self.x = 100
 		self.y = 200
 		self.theta = 10
 		self.radius = 30
@@ -25,9 +25,9 @@ class Robot():
 
 	def check_sensors(self):
 		for sensor in self.sensors:
-			dist = sensor.MAX_SENSOR_VALUE
 			sensor_bearing = (sensor.angle + self.theta) % 360  # Sensor angle is relative to the robot
-			sensor.p2 = point_from_angle(self.x, self.y, sensor_bearing, dist)
+			sensor.value = sensor.MAX_SENSOR_VALUE
+			sensor.p2 = point_from_angle(self.x, self.y, sensor_bearing, sensor.value)
 			for wall in self.walls:
 				crossover = wall.intersectsLine((self.x, self.y), sensor.p2)
 				if crossover != False:
@@ -36,8 +36,8 @@ class Robot():
 					sensor.p2 = crossover
 
 			# Check for wall collisions
-			if self.radius > dist + 0.0005:
-				moveback = point_from_angle(self.x, self.y, sensor_bearing, -(self.radius - dist))
+			if self.radius > sensor.value + 0.0005:
+				moveback = point_from_angle(self.x, self.y, sensor_bearing, -(self.radius - sensor.value))
 				self.x = moveback[0]
 				self.y = moveback[1]
 
