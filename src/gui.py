@@ -20,6 +20,9 @@ red = (255, 0, 0)
 pygame.font.init()
 font = pygame.font.SysFont('arial', 20)
 
+# parameters
+button_step = 0.5
+
 
 class GFX:
     wall_list = []
@@ -44,7 +47,7 @@ class GFX:
         # wall_list.add(Wall(x=int(HEIGHT * random.random()), y=0, width=2, height=int(HEIGHT * random.random())))
         # wall_list.add(
         # 	Wall(x=int(HEIGHT * random.random()), y=int(HEIGHT * random.random()), width=int(WIDTH * random.random()),
-        # 		 height=2))
+        # 		 height=2)) 
 
         # Init pygame window
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
@@ -89,21 +92,21 @@ class GFX:
         elif events.type == KEYUP:
             # TODO: add controls here
             if events.key == K_w:
-                self.robot.speed[0] += 1  # Left wheel increment (todo: apply max velocity)
+                self.robot.speed[0] += button_step  # Left wheel increment (todo: apply max velocity)
             elif events.key == K_s:
-                self.robot.speed[0] -= 1  # Left wheel decrement
+                self.robot.speed[0] -= button_step # Left wheel decrement
             elif events.key == K_o:
-                self.robot.speed[1] += 1  # Right wheel increment
+                self.robot.speed[1] += button_step  # Right wheel increment
             elif events.key == K_l:
-                self.robot.speed[1] -= 1  # Right wheel decrement
+                self.robot.speed[1] -= button_step  # Right wheel decrement
             elif events.key == K_x:
                 self.robot.speed = [0, 0]  # Set to 0
             elif events.key == K_t:
-                self.robot.speed[0] += 1  # Both increment
-                self.robot.speed[1] += 1  # Both increment
+                self.robot.speed[0] += button_step  # Both increment
+                self.robot.speed[1] += button_step  # Both increment
             elif events.key == K_g:
-                self.robot.speed[0] -= 1  # Both decrement
-                self.robot.speed[1] -= 1  # Both decrement
+                self.robot.speed[0] -= button_step  # Both decrement
+                self.robot.speed[1] -= button_step  # Both decrement
 
     def update(self):
         # Update robot step
@@ -141,9 +144,9 @@ class GFX:
                          point_from_angle(self.robot.x, self.robot.y, self.robot.theta, self.robot.radius), 2)
 
         # Wheel speeds
-        textsurface = font.render("left wheel: {0:.0f}".format(self.robot.speed[0]), False, red)  # Left
+        textsurface = font.render("left wheel: {0:.1f}".format(self.robot.speed[0]), False, red)  # Left
         self.screen.blit(textsurface, (30, HEIGHT - 100))
-        textsurface = font.render("rigth wheel: {0:.0f}".format(self.robot.speed[1]), False, red)  # Right
+        textsurface = font.render("rigth wheel: {0:.1f}".format(self.robot.speed[1]), False, red)  # Right
         self.screen.blit(textsurface, (30, HEIGHT - 80))
         textsurface = font.render("angle: {0:.2f}".format(math.degrees(self.robot.theta)), False, red)  # Angle
         self.screen.blit(textsurface, (30, HEIGHT - 60))
