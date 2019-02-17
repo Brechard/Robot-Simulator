@@ -11,7 +11,7 @@ from src.wall import Wall
 from src.helper import *
 
 WIDTH = 1040
-HEIGHT = 600
+HEIGHT = 700
 
 # some colors
 black = (0, 0, 0)
@@ -21,7 +21,7 @@ pygame.font.init()
 font = pygame.font.SysFont('arial', 20)
 
 # parameters
-button_step = 0.5
+button_step = 0.05
 
 
 class GFX:
@@ -37,9 +37,9 @@ class GFX:
         self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
         padding = 200
-        self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
-        self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-        self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
+        self.wall_list.append(Wall((padding*2, padding), (WIDTH - padding, padding)))
+        self.wall_list.append(Wall((padding*2, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
+        self.wall_list.append(Wall((padding*2, padding), (padding*2, HEIGHT - padding)))
         self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
         # Other random walls
@@ -144,9 +144,9 @@ class GFX:
                          point_from_angle(self.robot.x, self.robot.y, self.robot.theta, self.robot.radius), 2)
 
         # Wheel speeds
-        textsurface = font.render("left wheel: {0:.1f}".format(self.robot.speed[0]), False, red)  # Left
+        textsurface = font.render("left wheel: {0:.2f}".format(self.robot.speed[0]), False, red)  # Left
         self.screen.blit(textsurface, (30, HEIGHT - 100))
-        textsurface = font.render("rigth wheel: {0:.1f}".format(self.robot.speed[1]), False, red)  # Right
+        textsurface = font.render("right wheel: {0:.2f}".format(self.robot.speed[1]), False, red)  # Right
         self.screen.blit(textsurface, (30, HEIGHT - 80))
         textsurface = font.render("angle: {0:.2f}".format(math.degrees(self.robot.theta)), False, red)  # Angle
         self.screen.blit(textsurface, (30, HEIGHT - 60))

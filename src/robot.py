@@ -11,7 +11,8 @@ class Robot():
         self.y = 200
         self.theta = 0
         self.radius = 30
-        self.speed = [2, 2]  # left - [0], right - [1]
+        self.wheel_dist = self.radius*2  # Distance between wheels
+        self.speed = [0, 0]  # left - [0], right - [1]
         self.is_rotating = self.check_if_rotates()
         self.width = WIDTH
         self.height = HEIGHT
@@ -73,21 +74,21 @@ class Robot():
         Calculate the speed of the robot basing on the wheel speed
         :return: Velocity of the robot
         """
-        return (self.speed[0] + self.speed[1]) / 2
+        return (self.speed[1] + self.speed[0]) / 2
 
     def calculate_R(self):
         """
         Calculate distance from midpoint to ICC basing on the wheel speed and width
         :return:
         """
-        return self.radius / 2 * (self.speed[0] + self.speed[1]) / (self.speed[1] - self.speed[0])
+        return (self.wheel_dist / 2) * (self.speed[0] + self.speed[1]) / (self.speed[1] - self.speed[0])
 
     def calculate_rate_of_rotation(self):
         """
         Calculate rate of rotation basing on speed of the wheels
         :return:
         """
-        return (self.speed[1] - self.speed[0]) / self.radius
+        return (self.speed[1] - self.speed[0]) / self.wheel_dist
 
     def get_ICC_coordinates(self, R):
         """
@@ -103,7 +104,7 @@ class Robot():
         Checks if the velocities of the wheels are equal and returns corresponding True/False value
         :return:
         """
-        if self.speed[0] == self.speed[1]:
+        if math.isclose(self.speed[0], self.speed[1]):
             self.is_rotating = False
         else:
             self.is_rotating = True
@@ -130,14 +131,13 @@ class Robot():
             result = np.dot(rotation_matrix, coordinate_vector) + rotation_origin_vector
             self.x = result[0]
             self.y = result[1]
-            self.theta += result[2]
+            self.theta -= result[2]
             print(R)
             # Reset degrees after 2 PI radians
             if self.theta >= 2 * math.pi:
                 self.theta = self.theta - 2 * math.pi
             elif self.theta <= -2 * math.pi:
                 self.theta = self.theta + 2 * math.pi
-
         else:
             self.x += self.speed[0] * math.cos(self.theta)
             self.y += self.speed[0] * math.sin(self.theta)
