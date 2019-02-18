@@ -47,27 +47,20 @@ class Robot():
 
                 self.check_sensors()
 
-    # def update_position(self, time):
-    #     """ Apply the wheel velocity to the robot position using the elapsed time """
-    #     self.x += self.speed[0] * time
-    #     self.y += self.speed[1] * time
-    #
-    #     self.theta += time * 5
-    #     if self.theta >= 2 * math.pi:
-    #         self.theta = 0
-    #
-    #     # TODO: For mr. Bulat, play with your physics here
-    #     # if self.rect.left <= 0 or self.rect.right >= self.width:
-    #     # 	# When colliding with wall on the left, rebound
-    #     # 	self.speed[0] = -self.speed[0]
-    #     # 	self.rect.centerx += self.speed[0] * time
-    #     # if self.rect.top <= 0 or self.rect.bottom >= self.height:
-    #     # 	# When colliding with wall on the right, rebound
-    #     # 	self.speed[1] = -self.speed[1]
-    #     # 	self.rect.centery += self.speed[1] * time
-    #
-    #     # update sensors for new pos
-    #     self.check_sensors()
+        # Check walls
+        # for wall in self.walls:
+        #     intersect = wall.intersectsRobot(self.x, self.y, self.radius)
+        #     if intersect is not False:
+        #         # Apply the motion parallel to the wall
+        #         p1 = intersect[0]
+        #         p2 = intersect[1]
+        #         midpoint = get_line_midpoint(p1, p2)
+        #         dist = distance(midpoint, self.get_pos())  # Distance to midpoint
+        #         perpendicular_angle = round_angle(get_line_angle(self.get_pos(), midpoint), 90)  # Angle of movement perpendicular to wall
+        #         correction = point_from_angle(midpoint[0], midpoint[1], math.radians(perpendicular_angle), (self.radius - dist)+self.radius+0.01)
+        #         self.x = correction[0]
+        #         self.y = correction[1]
+
 
     def calculate_speed(self):
         """
@@ -109,7 +102,7 @@ class Robot():
         else:
             self.is_rotating = True
 
-    def update_position_test(self):
+    def update_position(self):
         """
         Updating position and angle of the robot. Firstly check if the rotation is present, then
         apply corresponding formula.
@@ -144,4 +137,3 @@ class Robot():
 
         self.check_sensors()
 
-    # def update_position_TEST(self, time):

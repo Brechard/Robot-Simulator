@@ -1,7 +1,5 @@
-import random
 import sys
 from datetime import datetime
-import math
 
 import pygame
 from pygame.locals import *
@@ -36,18 +34,11 @@ class GFX:
         self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
         self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
-        padding = 200
+        padding = 230
         self.wall_list.append(Wall((padding*2, padding), (WIDTH - padding, padding)))
-        self.wall_list.append(Wall((padding*2, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-        self.wall_list.append(Wall((padding*2, padding), (padding*2, HEIGHT - padding)))
+        self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
+        self.wall_list.append(Wall((padding*2, padding), (padding, HEIGHT - padding)))
         self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
-
-        # Other random walls
-        # wall_list.add(Wall(x=WIDTH / 3, y=0, width=2, height=int(HEIGHT * random.random())))
-        # wall_list.add(Wall(x=int(HEIGHT * random.random()), y=0, width=2, height=int(HEIGHT * random.random())))
-        # wall_list.add(
-        # 	Wall(x=int(HEIGHT * random.random()), y=int(HEIGHT * random.random()), width=int(WIDTH * random.random()),
-        # 		 height=2)) 
 
         # Init pygame window
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
@@ -90,9 +81,8 @@ class GFX:
         if events.type == QUIT:
             sys.exit(0)
         elif events.type == KEYUP:
-            # TODO: add controls here
             if events.key == K_w:
-                self.robot.speed[0] += button_step  # Left wheel increment (todo: apply max velocity)
+                self.robot.speed[0] += button_step  # Left wheel increment
             elif events.key == K_s:
                 self.robot.speed[0] -= button_step # Left wheel decrement
             elif events.key == K_o:
@@ -115,13 +105,7 @@ class GFX:
         time_diff = time_diff.total_seconds()
         self.last_time = now
 
-        self.robot.update_position_test()
-
-    # Check wall intersections
-    # for wall in self.wall_list:
-    # 	intersect = wall.intersectsRobot(self.robot.x, self.robot.y, self.robot.radius)
-    # 	if intersect is not None and len(intersect) > 0:
-    # 		t=2
+        self.robot.update_position()
 
     def draw(self):
 
