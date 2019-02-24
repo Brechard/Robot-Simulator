@@ -1,6 +1,7 @@
 from src.sensor import Sensor
 from src.wall import Wall
 from src.helper import *
+from src.neuralnet import *
 import math
 import numpy as np
 
@@ -46,20 +47,13 @@ class Robot():
                 self.y = moveback[1]
 
                 self.check_sensors()
+                break
 
-        # Check walls
-        # for wall in self.walls:
-        #     intersect = wall.intersectsRobot(self.x, self.y, self.radius)
-        #     if intersect is not False:
-        #         # Apply the motion parallel to the wall
-        #         p1 = intersect[0]
-        #         p2 = intersect[1]
-        #         midpoint = get_line_midpoint(p1, p2)
-        #         dist = distance(midpoint, self.get_pos())  # Distance to midpoint
-        #         perpendicular_angle = round_angle(get_line_angle(self.get_pos(), midpoint), 90)  # Angle of movement perpendicular to wall
-        #         correction = point_from_angle(midpoint[0], midpoint[1], math.radians(perpendicular_angle), (self.radius - dist)+self.radius+0.01)
-        #         self.x = correction[0]
-        #         self.y = correction[1]
+    def get_sensor_values(self):
+        list = []
+        for sensor in self.sensors:
+            list.append(sensor.value)
+        return list
 
 
     def calculate_speed(self):
@@ -107,6 +101,13 @@ class Robot():
         Updating position and angle of the robot. Firstly check if the rotation is present, then
         apply corresponding formula.
         """
+
+        # TODO implement genetic algorithm
+        nn = RNN(inputs=12, outputs=2, hidden_layer_size=5)
+        genome = nn.initialize_random_weights()
+        outputs = nn.propagate(self.get_sensor_values(), genome)
+        self.speed = outputs
+
         self.check_if_rotates()
 
         if self.is_rotating:
