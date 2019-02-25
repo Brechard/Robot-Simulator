@@ -4,9 +4,10 @@ from datetime import datetime
 import pygame
 from pygame.locals import *
 
+from neuralnet import *
+from src.helper import *
 from src.robot import Robot
 from src.wall import Wall
-from src.helper import *
 
 WIDTH = 1040
 HEIGHT = 700
@@ -26,7 +27,7 @@ class GFX:
     wall_list = []
     robot_size = 60
 
-    def __init__(self):
+    def __init__(self, weights=None):
         # Outer walls
         padding = 20
         self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
@@ -35,21 +36,21 @@ class GFX:
         self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
         padding = 230
-        self.wall_list.append(Wall((padding*2, padding), (WIDTH - padding, padding)))
+        self.wall_list.append(Wall((padding * 2, padding), (WIDTH - padding, padding)))
         self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-        self.wall_list.append(Wall((padding*2, padding), (padding, HEIGHT - padding)))
+        self.wall_list.append(Wall((padding * 2, padding), (padding, HEIGHT - padding)))
         self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+
+        self.visited = np.zeros((WIDTH, HEIGHT))
 
         # Init pygame window
         self.screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("ARS")
 
         # Init robot
-        self.robot = Robot(WIDTH, HEIGHT, self.wall_list)
+        self.robot = Robot(WIDTH, HEIGHT, self.wall_list, weights)
 
-        self.main()
-
-    def load_image(self, filename, transparent = False):
+    def load_image(self, filename, transparent=False):
         try:
             image = pygame.image.load(filename).convert()
         except pygame.error as message:
@@ -59,23 +60,32 @@ class GFX:
             image.set_colorkey(color)
         return image
 
-    def main(self):
+    def main(self, draw):
         clock = pygame.time.Clock()
         # background = load_image("../images/background.png")
+        if not draw:
+            pygame.display.iconify()
 
         self.start_time = datetime.now()
         self.last_time = datetime.now()
 
-        while True:
+        fitness = 0
+        time = 0
+        while time < 1000:
             # Handle inputs
             for events in pygame.event.get():
                 self.event(events)
 
             # Update state
-            self.update()
+            fitness += self.update()
 
             # Draw current state
-            self.draw()
+            if draw:
+                self.draw()
+
+            time += 1
+
+        return fitness
 
     def event(self, events):
         if events.type == QUIT:
@@ -84,7 +94,7 @@ class GFX:
             if events.key == K_w:
                 self.robot.speed[0] += button_step  # Left wheel increment
             elif events.key == K_s:
-                self.robot.speed[0] -= button_step # Left wheel decrement
+                self.robot.speed[0] -= button_step  # Left wheel decrement
             elif events.key == K_o:
                 self.robot.speed[1] += button_step  # Right wheel increment
             elif events.key == K_l:
@@ -99,13 +109,27 @@ class GFX:
                 self.robot.speed[1] -= button_step  # Both decrement
 
     def update(self):
+        """
+        Update the positions of the robot and return the value to add to the fitness function.
+        When there is a collision with a wall we give -5 points and when we visit a new position we add 1 point.
+        :return: value to add to the fitness function
+        """
         # Update robot step
         now = datetime.now()
         time_diff = now - self.last_time
         time_diff = time_diff.total_seconds()
         self.last_time = now
 
-        self.robot.update_position()
+        collided, x, y = self.robot.update_position()
+        fit = 0
+        if self.visited[int(x), int(y)] == 0:
+            self.visited[int(x), int(y)] = 1
+            fit += 1
+
+        if collided:
+            fit -= 5
+
+        return fit
 
     def draw(self):
 
@@ -137,7 +161,6 @@ class GFX:
 
         pygame.display.update()
 
-
-if __name__ == '__main__':
-    pygame.init()
-    gui = GFX()
+# if __name__ == '__main__':
+#     pygame.init()
+#     gui = GFX()

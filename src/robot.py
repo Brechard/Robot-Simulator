@@ -1,23 +1,25 @@
-from src.sensor import Sensor
-from src.wall import Wall
-from src.helper import *
-from src.neuralnet import *
 import math
+from neuralnet import *
 import numpy as np
+
+from src.helper import *
+from src.sensor import Sensor
 
 
 class Robot():
-    def __init__(self, WIDTH, HEIGHT, walls):
+    def __init__(self, WIDTH, HEIGHT, walls, weights):
         self.x = 100
         self.y = 200
         self.theta = 0
         self.radius = 30
-        self.wheel_dist = self.radius*2  # Distance between wheels
+        self.wheel_dist = self.radius * 2  # Distance between wheels
         self.speed = [0, 0]  # left - [0], right - [1]
         self.is_rotating = self.check_if_rotates()
         self.width = WIDTH
         self.height = HEIGHT
         self.walls = walls
+
+        self.nn = RNN(inputs=12, outputs=2, hidden_layer_size=5, weights=weights)
 
         self.sensors = []
         num_sensors = 12
@@ -29,6 +31,7 @@ class Robot():
         return int(self.x), int(self.y)
 
     def check_sensors(self):
+        collision = False
         for sensor in self.sensors:
             sensor_bearing = (sensor.angle + self.theta) % (2 * math.pi)  # Sensor angle is relative to the robot
             sensor.value = sensor.MAX_SENSOR_VALUE
@@ -42,6 +45,7 @@ class Robot():
 
             # Check for wall collisions
             if self.radius > sensor.value + 0.0005:
+                collision = True
                 moveback = point_from_angle(self.x, self.y, sensor_bearing, -(self.radius - sensor.value))
                 self.x = moveback[0]
                 self.y = moveback[1]
@@ -49,12 +53,13 @@ class Robot():
                 self.check_sensors()
                 break
 
+        return collision
+
     def get_sensor_values(self):
         list = []
         for sensor in self.sensors:
             list.append(sensor.value)
         return list
-
 
     def calculate_speed(self):
         """
@@ -103,9 +108,7 @@ class Robot():
         """
 
         # TODO implement genetic algorithm
-        nn = RNN(inputs=12, outputs=2, hidden_layer_size=5)
-        genome = nn.initialize_random_weights()
-        outputs = nn.propagate(self.get_sensor_values(), genome)
+        outputs = self.nn.propagate([sensor.value for sensor in self.sensors])
         self.speed = outputs
 
         self.check_if_rotates()
@@ -136,5 +139,4 @@ class Robot():
             self.x += self.speed[0] * math.cos(self.theta)
             self.y += self.speed[0] * math.sin(self.theta)
 
-        self.check_sensors()
-
+        return self.check_sensors(), round(self.x), round(self.y)

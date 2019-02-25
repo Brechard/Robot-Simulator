@@ -4,6 +4,13 @@ import numpy as np
 class RNN:
 
     def __init__(self, inputs=12, outputs=2, hidden_layer_size=5, weights=None):
+        """
+        When weights is not passed they will be created as random
+        :param inputs: Corresponds to the number of sensors
+        :param outputs: Corresponds to the speed of the motors
+        :param hidden_layer_size: Size of the hidden layer
+        :param weights: Weights of the RNN
+        """
         self.inputs = inputs
         self.recurrent_nodes = outputs
         self.outputs = outputs
@@ -12,7 +19,7 @@ class RNN:
         if weights is not None:
             self.unflatten(weights)
         else:
-            self.weights = None
+            self.weights = self.initialize_random_weights()
 
     def initialize_random_weights(self, limit=.5):
         total_weights = (self.inputs + self.recurrent_nodes) * self.hidden_layer + self.hidden_layer * self.outputs
