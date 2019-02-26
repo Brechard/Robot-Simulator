@@ -139,4 +139,4 @@ class Robot():
             self.x += self.speed[0] * math.cos(self.theta)
             self.y += self.speed[0] * math.sin(self.theta)
 
-        return self.check_sensors(), round(self.x), round(self.y)
+        return self.check_sensors(), int(round(self.x)), int(round(self.y))
