@@ -73,7 +73,7 @@ class GFX:
 
 		fitness = 0
 		time = 0
-		while time < 10000:
+		while time < 100:
 			# Handle inputs
 			for events in pygame.event.get():
 				self.event(events)
@@ -86,7 +86,7 @@ class GFX:
 				self.draw()
 
 			time += 1
-
+		print("Finished executing. Fitness:", fitness)
 		return fitness
 
 	def event(self, events):
@@ -166,6 +166,9 @@ class GFX:
 		self.screen.blit(textsurface, (30, HEIGHT - 60))
 
 		pygame.display.update()
+
+	def get_nn_weights(self):
+		return self.robot.nn.flatten()
 
 # if __name__ == '__main__':
 #     pygame.init()

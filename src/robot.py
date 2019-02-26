@@ -129,7 +129,7 @@ class Robot():
             self.x = result[0]
             self.y = result[1]
             self.theta -= result[2]
-            print(R)
+            # print(R)
             # Reset degrees after 2 PI radians
             if self.theta >= 2 * math.pi:
                 self.theta = self.theta - 2 * math.pi

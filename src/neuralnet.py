@@ -17,9 +17,11 @@ class RNN:
         self.hidden_layer = hidden_layer_size
         self.last_outputs = np.zeros(outputs)
         if weights is not None:
-            self.unflatten(weights)
+            self.weights = weights
+            self.unflatten()
         else:
             self.weights = self.initialize_random_weights()
+            self.unflatten()
 
     def initialize_random_weights(self, limit=.5):
         total_weights = (self.inputs + self.recurrent_nodes) * self.hidden_layer + self.hidden_layer * self.outputs
@@ -35,25 +37,29 @@ class RNN:
             weights.append(w.flatten().tolist())
         return [item for sublist in weights for item in sublist]
 
-    def unflatten(self, weights):
+    def unflatten(self):
+        weights = np.asarray(self.weights)
+        n_hidden_layer_nodes = (self.inputs + self.recurrent_nodes)*self.hidden_layer
+        hidden_layer = weights[ : n_hidden_layer_nodes]
+        output_layer = weights[n_hidden_layer_nodes : ]
         self.weights = []
-        weights = np.asarray(weights)
-        hidden_layer = weights[:(self.inputs + self.recurrent_nodes)*self.hidden_layer]
-        self.weights.append(hidden_layer.reshape((self.inputs + self.recurrent_nodes, self.hidden_layer)))
-        output_layer = weights[(self.inputs + self.recurrent_nodes)*self.hidden_layer:]
-        self.weights.append(output_layer.reshape((self.hidden_layer, self.outputs)))
+        try:
+            self.weights.append(hidden_layer.reshape((self.inputs + self.recurrent_nodes, self.hidden_layer)))
+            self.weights.append(output_layer.reshape((self.hidden_layer, self.outputs)))
+        except:
+            print("BROKEN")
+            assert 1 == 2
 
-    def propagate(self, inputs, weights=None):
+    def propagate(self, inputs):
         # Add previous output as recurrent input
         values = np.append(inputs, self.last_outputs)
 
-        # Set weights
-        if weights is not None:
-            self.unflatten(weights)
-
         # Propagate
-        for weights in self.weights:
-            values = np.tanh(np.matmul(values, weights))
+        for weight in self.weights:
+            try:
+                values = np.tanh(np.matmul(values, weight))
+            except:
+                print("BROKEN BENINGING")
 
         self.last_outputs = values
         return values
