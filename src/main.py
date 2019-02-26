@@ -38,4 +38,4 @@ def genetics(n_generation=10, population_size=10, n_selected=3):
 
 
 gui = genetics()
-gui.main(True)
+gui.main(True, 10000)

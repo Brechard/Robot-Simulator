@@ -62,7 +62,7 @@ class GFX:
 			image.set_colorkey(color)
 		return image
 
-	def main(self, draw):
+	def main(self, draw, max_time=100):
 		clock = pygame.time.Clock()
 		# background = load_image("../images/background.png")
 		if not draw:
@@ -73,7 +73,7 @@ class GFX:
 
 		fitness = 0
 		time = 0
-		while time < 100:
+		while time < max_time:
 			# Handle inputs
 			for events in pygame.event.get():
 				self.event(events)
