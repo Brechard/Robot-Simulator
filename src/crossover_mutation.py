@@ -14,7 +14,7 @@ def one_point_crossover(parent_1, parent_2):
 def mutation_v1(array, prob = 10):
     """ Probability should be out of 100 """
 
-    limit = 0.5
+    limit = 1
     for pos in range(len(array)):
         seed = random.random() * 100
         if seed < prob:

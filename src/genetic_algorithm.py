@@ -30,7 +30,7 @@ wall_list.append(Wall((padding * 2, padding), (padding, HEIGHT - padding)))
 wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
 
-def calculate_fitness(robot, times = 200):
+def calculate_fitness(robot, times = 1000):
     """
     Start the simulation of movement of a robot and calculate the fitness
     :param robot:
@@ -56,7 +56,7 @@ def calculate_fitness(robot, times = 200):
         if visited[x_bin_idx, y_bin_idx] == 0:
             visited[x_bin_idx, y_bin_idx] = 1
             visited_arr.append([x_bin_idx, y_bin_idx])
-            delta_fitness += 1
+            delta_fitness += 2
 
         # Decrease fitness if wall collided
         if collided:
@@ -82,12 +82,17 @@ def calculate_diversity(population):
                 #     for l in range(len(first_robot.nn.weights[k])):
                 #         diversity += abs(first_robot.nn.weights[k][l] - second_robot.nn.weights[k][l])
 
-                result = np.absolute(np.array(first_robot.get_NN_weights())- np.array(second_robot.get_NN_weights()))
-                print()
+                result = np.absolute(first_robot.get_NN_weights() - second_robot.get_NN_weights())
+                res = 0
+                for row in result:
+                    for column in row:
+                        for smth in column:
+                            res += smth
+                return res
 
 
 # def write_weights(n_generation, poulation):
-    #TODO write down the weights in FILE
+    #TODO write down the weights in a FILE
     """
     :param n_generation: 
     :param poulation: 
@@ -96,7 +101,7 @@ def calculate_diversity(population):
 
 
 
-def genetics(n_generation = 50, population_size = 50, n_selected = 5):
+def genetics(n_generation = 20, population_size = 100, n_selected = 5):
     population = []
     for r in range(population_size):
         """ Since we are starting the population, we don't send weights so that they are created randomly"""

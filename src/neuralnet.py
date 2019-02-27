@@ -23,7 +23,7 @@ class RNN:
             self.weights = self.initialize_random_weights()
             self.unflatten()
 
-    def initialize_random_weights(self, limit=5):
+    def initialize_random_weights(self, limit=0.5):
         total_weights = (self.inputs + self.recurrent_nodes) * self.hidden_layer + self.hidden_layer * self.outputs
         # input_weights = np.random.uniform(-limit, limit, (self.inputs + self.recurrent_nodes, self.hidden_layer))
         # output_weights = np.random.uniform(-limit, limit, (self.hidden_layer, self.outputs))
@@ -46,6 +46,7 @@ class RNN:
         try:
             self.weights.append(hidden_layer.reshape((self.inputs + self.recurrent_nodes, self.hidden_layer)))
             self.weights.append(output_layer.reshape((self.hidden_layer, self.outputs)))
+            self.weights = np.array(self.weights)
         except:
             print("BROKEN")
             assert 1 == 2
