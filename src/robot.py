@@ -1,5 +1,5 @@
 import math
-from neuralnet import *
+from src.neuralnet import *
 import numpy as np
 
 from src.helper import *
@@ -7,7 +7,7 @@ from src.sensor import Sensor
 
 
 class Robot():
-    def __init__(self, WIDTH, HEIGHT, walls, weights):
+    def __init__(self, WIDTH, HEIGHT, walls, weights = None):
         self.x = 100
         self.y = 200
         self.theta = 0
@@ -140,3 +140,12 @@ class Robot():
             self.y += self.speed[0] * math.sin(self.theta)
 
         return self.check_sensors(), int(round(self.x)), int(round(self.y))
+
+    def set_NN(self, NN):
+        self.nn = NN
+
+    def get_NN_weights_flatten(self):
+        return self.nn.flatten()
+
+    def get_NN_weights(self):
+        return self.nn.weights
