@@ -7,17 +7,26 @@ from src.sensor import Sensor
 
 
 class Robot():
-    def __init__(self, WIDTH, HEIGHT, walls, weights = None):
+    def __init__(self, WIDTH, HEIGHT, walls, weights = None, SCALE=100):
         self.x = 100
         self.y = 200
         self.theta = 0
         self.radius = 30
         self.wheel_dist = self.radius * 2  # Distance between wheels
         self.speed = [0, 0]  # left - [0], right - [1]
-        self.is_rotating = self.check_if_rotates()
+        self.check_if_rotates()
         self.width = WIDTH
         self.height = HEIGHT
         self.walls = walls
+        self.fitness = 0
+        self.fitness_history = []
+        self.scale = SCALE
+        self.vertical_bins = np.linspace(0, HEIGHT, num=SCALE)
+        self.horizontal_bins = np.linspace(0, WIDTH, num=SCALE)
+        self.visited = np.zeros((SCALE, SCALE))
+        self.visited_arr = []
+        self.old_x, self.old_y = np.digitize(self.x, self.horizontal_bins), np.digitize(self.y, self.vertical_bins)
+
 
         self.nn = RNN(inputs=12, outputs=2, hidden_layer_size=5, weights=weights)
 
@@ -139,6 +148,7 @@ class Robot():
             self.x += self.speed[0] * math.cos(self.theta)
             self.y += self.speed[0] * math.sin(self.theta)
 
+        self.update_fitness()
         return self.check_sensors(), int(round(self.x)), int(round(self.y))
 
     def set_NN(self, NN):
@@ -149,3 +159,33 @@ class Robot():
 
     def get_NN_weights(self):
         return self.nn.weights
+
+    def update_fitness(self):
+        self.check_sensors()
+        x, y = int(round(self.x)), int(round(self.y))
+
+        collided = self.check_sensors()
+
+        delta_fitness = 0
+
+        x_bin_idx = np.digitize(x, self.horizontal_bins)
+        y_bin_idx = np.digitize(y, self.vertical_bins)
+
+        # Increase fitness calculated when new space visited
+        if self.visited[x_bin_idx, y_bin_idx] == 0:
+            self.visited[x_bin_idx, y_bin_idx] = 1
+            self.visited_arr.append([x_bin_idx, y_bin_idx])
+            delta_fitness += 2
+
+        # Decrease fitness if wall collided
+        if collided:
+            delta_fitness -= 5
+
+        # Decrease fitness if didnt move in discrete space:
+        if self.old_x == x_bin_idx and self.old_y == y_bin_idx:
+            delta_fitness -= 1
+
+        self.fitness_history.append(self.fitness)
+        self.fitness += delta_fitness
+        self.old_x, self.old_y = x, y
+

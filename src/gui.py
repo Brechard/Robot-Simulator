@@ -148,8 +148,8 @@ class GFX:
         # Sensors
         for i, sensor in enumerate(self.robot.sensors):
             pygame.draw.line(self.screen, red, self.robot.get_pos(), sensor.p2)
-            textsurface = font.render(str(i) + ": " + "{0:.0f}".format(sensor.value), False, red)
-            self.screen.blit(textsurface, sensor.p2)
+            text_surface = font.render(str(i) + ": " + "{0:.0f}".format(sensor.value), False, red)
+            self.screen.blit(text_surface, sensor.p2)
 
         for visit in self.visited_arr:
             pygame.draw.circle(self.screen, dust, visit, 5, 0)
@@ -160,12 +160,19 @@ class GFX:
                          point_from_angle(self.robot.x, self.robot.y, self.robot.theta, self.robot.radius), 2)
 
         # Wheel speeds
-        textsurface = font.render("left wheel: {0:.2f}".format(self.robot.speed[0]), False, red)  # Left
-        self.screen.blit(textsurface, (30, HEIGHT - 100))
-        textsurface = font.render("right wheel: {0:.2f}".format(self.robot.speed[1]), False, red)  # Right
-        self.screen.blit(textsurface, (30, HEIGHT - 80))
-        textsurface = font.render("angle: {0:.2f}".format(math.degrees(self.robot.theta)), False, red)  # Angle
-        self.screen.blit(textsurface, (30, HEIGHT - 60))
+        text_surface = font.render("left wheel: {0:.2f}".format(self.robot.speed[0]), False, red)  # Left
+        self.screen.blit(text_surface, (30, HEIGHT - 100))
+        text_surface = font.render("right wheel: {0:.2f}".format(self.robot.speed[1]), False, red)  # Right
+        self.screen.blit(text_surface, (30, HEIGHT - 80))
+        text_surface = font.render("angle: {0:.2f}".format(math.degrees(self.robot.theta)), False, red)  # Angle
+        self.screen.blit(text_surface, (30, HEIGHT - 60))
+
+        text_surface = font.render("fitness: " + str(self.robot.fitness), False, red)  # Left
+        self.screen.blit(text_surface, (200, HEIGHT - 100))
+        text_surface = font.render("position y: " + str(int(self.robot.y)), False, red)  # Left
+        self.screen.blit(text_surface, (200, HEIGHT - 80))
+        text_surface = font.render("position x: " + str(int(self.robot.x)), False, red)  # Left
+        self.screen.blit(text_surface, (200, HEIGHT - 60))
 
         pygame.display.update()
 

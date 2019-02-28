@@ -10,8 +10,6 @@ from src.wall import Wall
 WIDTH = 1040
 HEIGHT = 700
 SCALE = 50
-vertical_step = HEIGHT / SCALE
-horizontal_step = WIDTH / SCALE
 vertical_bins = np.linspace(0, HEIGHT, num=SCALE)
 horizontal_bins = np.linspace(0, WIDTH, num=SCALE)
 
@@ -55,46 +53,19 @@ def save_weights(population):
     print("Weights saved")
 
 
-
-def calculate_fitness(robot, times=1000):
+def run_robot_simulation(robot, times=1000):
     """
     Start the simulation of movement of a robot and calculate the fitness
     :param robot:
     :param times: how many times calculate update the fitness
     :return: fitness of the robot
     """
-    visited = np.zeros((SCALE, SCALE))
-    visited_arr = []
-    x, y = robot.x, robot.y
-    fitness = 0
-    fitness_history = []
 
     # Start simulation of movement
     for i in range(times):
-        old_x, old_y = x, y
-        collided, x, y = robot.update_position()
-        delta_fitness = 0
+        robot.update_position()
 
-        x_bin_idx = np.digitize(x, horizontal_bins)
-        y_bin_idx = np.digitize(y, vertical_bins)
-
-        # Increase fitness calculated when new space visited
-        if visited[x_bin_idx, y_bin_idx] == 0:
-            visited[x_bin_idx, y_bin_idx] = 1
-            visited_arr.append([x_bin_idx, y_bin_idx])
-            delta_fitness += 2
-
-        # Decrease fitness if wall collided
-        if collided:
-            delta_fitness -= 5
-
-        # Decrease fitness if didnt move:
-        if old_x == x and old_y == y:
-            delta_fitness -= 1
-
-        fitness_history.append(fitness)
-        fitness += delta_fitness
-    return fitness
+    return robot.fitness
 
 
 def calculate_diversity(population):
@@ -123,7 +94,7 @@ def genetics(n_generation=20, population_size=100, n_selected=5, population=[]):
         population.append(Robot(WIDTH, HEIGHT, wall_list))
 
     for generation in range(n_generation):
-        fitness = np.array([calculate_fitness(robot) for robot in population])
+        fitness = np.array([run_robot_simulation(robot) for robot in population])
         for robot in fitness:
             print(robot)
         best_idx = np.argpartition(fitness, -n_selected)[-n_selected:]
@@ -152,8 +123,8 @@ def genetics(n_generation=20, population_size=100, n_selected=5, population=[]):
 
 
 # load_weights()
-best_robot = genetics(population=load_weights())
+# best_robot = genetics(population=load_weights())
 
 gui = GFX()
-gui.set_robot(best_robot)
-gui.main(True, 1000)
+gui.set_robot(Robot(WIDTH, HEIGHT, wall_list))
+gui.main(True, 10000)
