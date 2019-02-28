@@ -1,11 +1,10 @@
 import random
-import numpy as np
 
+import crossover_mutation
 from src.gui import GFX
 from src.neuralnet import *
-import crossover_mutation
-from src.wall import Wall
 from src.robot import Robot
+from src.wall import Wall
 
 # Build the invironment for a robot
 WIDTH = 1040
@@ -13,8 +12,8 @@ HEIGHT = 700
 SCALE = 50
 vertical_step = HEIGHT / SCALE
 horizontal_step = WIDTH / SCALE
-vertical_bins = np.linspace(0, HEIGHT, num = SCALE)
-horizontal_bins = np.linspace(0, WIDTH, num = SCALE)
+vertical_bins = np.linspace(0, HEIGHT, num=SCALE)
+horizontal_bins = np.linspace(0, WIDTH, num=SCALE)
 
 # Build the walls
 wall_list = []
@@ -30,7 +29,34 @@ wall_list.append(Wall((padding * 2, padding), (padding, HEIGHT - padding)))
 wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
 
-def calculate_fitness(robot, times = 1000):
+def load_weights():
+    """
+    Load the weights of the population
+    @return population: array of robots
+    """
+    weights = np.loadtxt('weights.txt', dtype=int)
+    population = []
+    for r_weights in weights:
+        population.append(Robot(WIDTH, HEIGHT, wall_list, r_weights))
+    print("Weights loaded")
+    return population
+
+
+def save_weights(population):
+    """
+    Save the weights of all the population
+    :param population: Array that contains  all the robots of the population to save
+    """
+    weights = []
+    for robot in population:
+        weights.append(robot.get_NN_weights_flatten())
+    weights = np.array(weights)
+    np.savetxt("weights.txt", weights, fmt='%d')
+    print("Weights saved")
+
+
+
+def calculate_fitness(robot, times=1000):
     """
     Start the simulation of movement of a robot and calculate the fitness
     :param robot:
@@ -91,18 +117,7 @@ def calculate_diversity(population):
                 return res
 
 
-# def write_weights(n_generation, poulation):
-    #TODO write down the weights in a FILE
-    """
-    :param n_generation: 
-    :param poulation: 
-    :return: 
-    """
-
-
-
-def genetics(n_generation = 20, population_size = 100, n_selected = 5):
-    population = []
+def genetics(n_generation=20, population_size=100, n_selected=5, population=[]):
     for r in range(population_size):
         """ Since we are starting the population, we don't send weights so that they are created randomly"""
         population.append(Robot(WIDTH, HEIGHT, wall_list))
@@ -118,7 +133,8 @@ def genetics(n_generation = 20, population_size = 100, n_selected = 5):
             """ Call a crossover function that is going to return the new weights """
             random.shuffle(best_robots)
             parent_1, parent_2 = best_robots[:2]
-            crossover = crossover_mutation.one_point_crossover(parent_1.get_NN_weights_flatten(), parent_2.get_NN_weights_flatten())
+            crossover = crossover_mutation.one_point_crossover(parent_1.get_NN_weights_flatten(),
+                                                               parent_2.get_NN_weights_flatten())
             mutation = crossover_mutation.mutation_v1(crossover)
             new_population_weights.append(mutation)
 
@@ -127,13 +143,17 @@ def genetics(n_generation = 20, population_size = 100, n_selected = 5):
 
         population = []
         for r in range(population_size):
-            population.append(Robot(WIDTH, HEIGHT, wall_list, weights = new_population_weights[r]))
+            population.append(Robot(WIDTH, HEIGHT, wall_list, weights=new_population_weights[r]))
         diversity = calculate_diversity(population)
-        print('\033[94m', "The population diversity", generation, "is:", diversity)
+        print('\033[94m', "The population diversity", generation, "is:", diversity, '\033[0m')
+        save_weights(population)
+
     return population[np.argmax(fitness)]
 
-best_robot = genetics()
+
+# load_weights()
+best_robot = genetics(population=load_weights())
 
 gui = GFX()
 gui.set_robot(best_robot)
-gui.main(True, 10000)
+gui.main(True, 1000)
