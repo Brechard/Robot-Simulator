@@ -1,43 +1,39 @@
-import random
+import numpy as np
 
-from src.gui import GFX
-from src.neuralnet import *
-import crossover_mutation
-from src.wall import Wall
-
-WIDTH = 1040
-HEIGHT = 700
+from robot import Robot
 
 
-
-def genetics(n_generation = 10, population_size = 10, n_selected = 3):
+def load_population(WIDTH, HEIGHT, wall_list):
+    """
+    Load the weights of the population
+    @return population: array of robots
+    """
+    weights = np.loadtxt('weights.txt', dtype=int)
     population = []
-    for r in range(population_size):
-        """ Since we are starting the population, we don't send weights so that they are created randomly"""
-        population.append(GFX())
-
-    for generation in range(n_generation):
-        fitness = np.array([gfx.main(False) for gfx in population])
-        best_idx = np.argpartition(fitness, -n_selected)[-n_selected:]
-        best_robots = [population[idx] for idx in best_idx]
-        new_population_weights = []
-        for i in range(population_size):
-            """ Call a crossover function that is going to return the new weights """
-            random.shuffle(best_robots)
-            parent_1, parent_2 = best_robots[:2]
-            crossover = crossover_mutation.one_point_crossover(parent_1.get_nn_weights(), parent_2.get_nn_weights())
-            mutation = crossover_mutation.mutation_v1(crossover)
-            new_population_weights.append(mutation)
-
-        print('\033[94m', "Best fitness in generation", generation, "is:", np.max(fitness),
-              ", avg fitness:", np.mean(fitness), '\033[0m')
-
-        population = []
-        for r in range(population_size):
-            population.append(GFX(weights = new_population_weights[r]))
-
-    return population[np.argmax(fitness)]
+    for r_weights in weights:
+        population.append(Robot(WIDTH, HEIGHT, wall_list, r_weights))
+    print("Weights loaded")
+    return population
 
 
-gui = genetics()
-gui.main(True, 10000)
+def save_population(population):
+    """
+    Save the weights of all the population
+    :param population: Array that contains  all the robots of the population to save
+    """
+    weights = []
+    for robot in population:
+        weights.append(robot.get_NN_weights_flatten())
+
+    weights = np.array(weights)
+    np.savetxt("weights.txt", weights, fmt='%d')
+    print("Population weights saved")
+
+
+def save_best_robot(robot):
+    np.savetxt("best_robot.txt", robot.get_NN_weights_flatten(), fmt='%d')
+
+
+def load_best_weights():
+    """ Return the weights of the best robot of the population """
+    return np.loadtxt('best_robot.txt', dtype=int)

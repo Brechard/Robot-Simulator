@@ -5,6 +5,7 @@ from src.gui import GFX
 from src.neuralnet import *
 from src.robot import Robot
 from src.wall import Wall
+import main
 
 # Build the invironment for a robot
 WIDTH = 1040
@@ -27,32 +28,6 @@ wall_list.append(Wall((padding * 2, padding), (padding, HEIGHT - padding)))
 wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
 
-def load_weights():
-    """
-    Load the weights of the population
-    @return population: array of robots
-    """
-    weights = np.loadtxt('weights.txt', dtype=int)
-    population = []
-    for r_weights in weights:
-        population.append(Robot(WIDTH, HEIGHT, wall_list, r_weights))
-    print("Weights loaded")
-    return population
-
-
-def save_weights(population):
-    """
-    Save the weights of all the population
-    :param population: Array that contains  all the robots of the population to save
-    """
-    weights = []
-    for robot in population:
-        weights.append(robot.get_NN_weights_flatten())
-    weights = np.array(weights)
-    np.savetxt("weights.txt", weights, fmt='%d')
-    print("Weights saved")
-
-
 def run_robot_simulation(robot, times=1000):
     """
     Start the simulation of movement of a robot and calculate the fitness
@@ -60,15 +35,14 @@ def run_robot_simulation(robot, times=1000):
     :param times: how many times calculate update the fitness
     :return: fitness of the robot
     """
-
     # Start simulation of movement
     for i in range(times):
         robot.update_position()
-
     return robot.fitness
 
 
 def calculate_diversity(population):
+    # TODO Check this method
     diversity = 0
     for i in (range(len(population))):
         for j in range(len(population)):
@@ -88,15 +62,19 @@ def calculate_diversity(population):
                 return res
 
 
-def genetics(n_generation=20, population_size=100, n_selected=5, population=[]):
-    for r in range(population_size):
-        """ Since we are starting the population, we don't send weights so that they are created randomly"""
-        population.append(Robot(WIDTH, HEIGHT, wall_list))
+def genetics(n_generation=6, population_size=100, n_selected=5, load_population=False):
+    if load_population:
+        population = main.load_population(WIDTH, HEIGHT, wall_list)
+    else:
+        population = []
+        for r in range(population_size):
+            """ Since we are starting the population, we don't send weights so that they are created randomly"""
+            population.append(Robot(WIDTH, HEIGHT, wall_list))
 
     for generation in range(n_generation):
         fitness = np.array([run_robot_simulation(robot) for robot in population])
-        for robot in fitness:
-            print(robot)
+        for pos, robot in enumerate(fitness):
+            print("Robot", pos, "fitness:", robot)
         best_idx = np.argpartition(fitness, -n_selected)[-n_selected:]
         best_robots = [population[idx] for idx in best_idx]
         new_population_weights = []
@@ -117,14 +95,7 @@ def genetics(n_generation=20, population_size=100, n_selected=5, population=[]):
             population.append(Robot(WIDTH, HEIGHT, wall_list, weights=new_population_weights[r]))
         diversity = calculate_diversity(population)
         print('\033[94m', "The population diversity", generation, "is:", diversity, '\033[0m')
-        save_weights(population)
+        main.save_population(population)
+        main.save_best_robot(population[np.argmax(fitness)])
 
     return population[np.argmax(fitness)]
-
-
-# load_weights()
-# best_robot = genetics(population=load_weights())
-
-gui = GFX()
-gui.set_robot(Robot(WIDTH, HEIGHT, wall_list))
-gui.main(True, 10000)

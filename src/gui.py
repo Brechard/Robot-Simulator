@@ -2,9 +2,7 @@ import sys
 from datetime import datetime
 
 import pygame
-import numpy as np
 from pygame.locals import *
-
 
 from neuralnet import *
 from src.helper import *
@@ -30,7 +28,7 @@ class GFX:
     wall_list = []
     robot_size = 60
 
-    def __init__(self, weights = None):
+    def __init__(self, weights=None):
         # Outer walls
         padding = 20
         self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
@@ -54,7 +52,7 @@ class GFX:
         # Init robot
         self.robot = Robot(WIDTH, HEIGHT, self.wall_list, weights)
 
-    def load_image(self, filename, transparent = False):
+    def load_image(self, filename, transparent=False):
         try:
             image = pygame.image.load(filename).convert()
         except pygame.error as message:
@@ -64,7 +62,7 @@ class GFX:
             image.set_colorkey(color)
         return image
 
-    def main(self, draw, max_time = 100):
+    def main(self, draw, max_time=100):
         clock = pygame.time.Clock()
         # background = load_image("../images/background.png")
         if not draw:
@@ -73,23 +71,17 @@ class GFX:
         self.start_time = datetime.now()
         self.last_time = datetime.now()
 
-        fitness = 0
-        time = 0
-        while time < max_time:
+        for i in range(max_time):
             # Handle inputs
             for events in pygame.event.get():
                 self.event(events)
 
             # Update state
-            fitness += self.update()
+            self.update()
 
             # Draw current state
             if draw:
                 self.draw()
-
-            time += 1
-        print("Finished executing. Fitness:", fitness)
-        return fitness
 
     def event(self, events):
         if events.type == QUIT:
@@ -124,17 +116,7 @@ class GFX:
         time_diff = time_diff.total_seconds()
         self.last_time = now
 
-        collided, x, y = self.robot.update_position()
-        fit = 0
-        if self.visited[x, y] == 0:
-            self.visited[x, y] = 1
-            self.visited_arr.append([x, y])
-            fit += 1
-
-        if collided:
-            fit -= 5
-
-        return fit
+        self.visited_arr = self.robot.update_position()
 
     def draw(self):
 

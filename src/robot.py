@@ -7,7 +7,7 @@ from src.sensor import Sensor
 
 
 class Robot():
-    def __init__(self, WIDTH, HEIGHT, walls, weights = None, SCALE=100):
+    def __init__(self, WIDTH, HEIGHT, walls, weights = None, SCALE=200):
         self.x = 100
         self.y = 200
         self.theta = 0
@@ -39,8 +39,7 @@ class Robot():
     def get_pos(self):
         return int(self.x), int(self.y)
 
-    def check_sensors(self):
-        collision = False
+    def check_sensors(self, collision=False):
         for sensor in self.sensors:
             sensor_bearing = (sensor.angle + self.theta) % (2 * math.pi)  # Sensor angle is relative to the robot
             sensor.value = sensor.MAX_SENSOR_VALUE
@@ -54,12 +53,11 @@ class Robot():
 
             # Check for wall collisions
             if self.radius > sensor.value + 0.0005:
-                collision = True
                 moveback = point_from_angle(self.x, self.y, sensor_bearing, -(self.radius - sensor.value))
                 self.x = moveback[0]
                 self.y = moveback[1]
 
-                self.check_sensors()
+                collision = self.check_sensors(True)
                 break
 
         return collision
@@ -149,7 +147,7 @@ class Robot():
             self.y += self.speed[0] * math.sin(self.theta)
 
         self.update_fitness()
-        return self.check_sensors(), int(round(self.x)), int(round(self.y))
+        return self.visited_arr
 
     def set_NN(self, NN):
         self.nn = NN
@@ -161,10 +159,9 @@ class Robot():
         return self.nn.weights
 
     def update_fitness(self):
-        self.check_sensors()
+        collided = self.check_sensors()
         x, y = int(round(self.x)), int(round(self.y))
 
-        collided = self.check_sensors()
 
         delta_fitness = 0
 
@@ -174,7 +171,7 @@ class Robot():
         # Increase fitness calculated when new space visited
         if self.visited[x_bin_idx, y_bin_idx] == 0:
             self.visited[x_bin_idx, y_bin_idx] = 1
-            self.visited_arr.append([x_bin_idx, y_bin_idx])
+            self.visited_arr.append([x, y])
             delta_fitness += 2
 
         # Decrease fitness if wall collided
