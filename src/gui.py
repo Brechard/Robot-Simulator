@@ -38,10 +38,14 @@ class GFX:
         self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
         padding = 230
-        self.wall_list.append(Wall((padding * 2, padding), (WIDTH - padding, padding)))
+        self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
         self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-        self.wall_list.append(Wall((padding * 2, padding), (padding, HEIGHT - padding)))
+        self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
         self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+        # self.wall_list.append(Wall((padding * 2, padding), (WIDTH - padding, padding)))
+        # self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
+        # self.wall_list.append(Wall((padding * 2, padding), (padding, HEIGHT - padding)))
+        # self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
         self.visited = np.zeros((WIDTH, HEIGHT))
         self.visited_arr = []
@@ -150,12 +154,15 @@ class GFX:
         text_surface = font.render("angle: {0:.2f}".format(math.degrees(self.robot.theta)), False, red)  # Angle
         self.screen.blit(text_surface, (30, HEIGHT - 60))
 
-        text_surface = font.render("fitness: " + str(self.robot.fitness), False, red)  # Left
+        text_surface = font.render("fitness: " + str(self.robot.fitness), False, red)
         self.screen.blit(text_surface, (200, HEIGHT - 100))
-        text_surface = font.render("position y: " + str(int(self.robot.y)), False, red)  # Left
+        text_surface = font.render("position y: " + str(int(self.robot.y)), False, red)
         self.screen.blit(text_surface, (200, HEIGHT - 80))
-        text_surface = font.render("position x: " + str(int(self.robot.x)), False, red)  # Left
+        text_surface = font.render("position x: " + str(int(self.robot.x)), False, red)
         self.screen.blit(text_surface, (200, HEIGHT - 60))
+
+        text_surface = font.render("updates: " + str(int(len(self.robot.fitness_history))), False, red)
+        self.screen.blit(text_surface, (370, HEIGHT - 60))
 
         pygame.display.update()
 
