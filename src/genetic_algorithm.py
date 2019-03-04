@@ -35,22 +35,27 @@ wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - pad
 # wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
 
-def run_robot_simulation(robot, times=100):
+def run_robot_simulation(robot, times=100, draw=False):
 	"""
     Start the simulation of movement of a robot and calculate the fitness using multiple initial positions
     :param robot:
     :param times: how many times calculate update the fitness
     :return: fitness of the robot
     """
-	initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
-	# initial_positions = [(100, 150, 0)]
+	# initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
+	initial_positions = [(100, 150, 0)]
 	fitness = 0
 	for j in range(len(initial_positions)):
 		# Start simulation of movement
 		bot = Robot(WIDTH, HEIGHT, wall_list, weights=robot.get_NN_weights_flatten())
 		bot.set_pos(initial_positions[j][0], initial_positions[j][1], initial_positions[j][2])
-		for i in range(times):
-			bot.update_position()
+		if not draw:
+			for i in range(times):
+				bot.update_position()
+		else:
+			gui = GFX()
+			gui.set_robot(bot)
+			gui.main(True, times)
 		fitness += bot.fitness
 	return fitness
 
@@ -80,7 +85,7 @@ def get_best_individual():
 	return Robot(WIDTH, HEIGHT, wall_list, main.load_best_weights())
 
 
-def genetics(n_generation=6, population_size=30, n_selected=5, mutation_rate=0.05, elitism=0.1, load_population=False):
+def genetics(n_generation=6, population_size=30, n_selected=5, mutation_rate=0.05, elitism=0.1, load_population=False, draw=False):
 	if load_population:
 		population = main.load_population(WIDTH, HEIGHT, wall_list)
 	else:
@@ -92,7 +97,7 @@ def genetics(n_generation=6, population_size=30, n_selected=5, mutation_rate=0.0
 	stats = []
 	for generation in range(n_generation):
 		# Simulate fitness for each individual
-		fitness = np.array([run_robot_simulation(robot, times=450) for robot in population])
+		fitness = np.array([run_robot_simulation(robot, times=450, draw=draw) for robot in population])
 		for pos, robot in enumerate(fitness):
 			print("Robot", pos, "fitness:", robot)
 
@@ -118,17 +123,23 @@ def genetics(n_generation=6, population_size=30, n_selected=5, mutation_rate=0.0
 			genome = population[best_idx[i]].get_NN_weights_flatten()
 			new_population_weights.append(crossover_mutation.mutation_v1(genome, mutation_rate, 5))
 
-		print('\033[94m', "Best fitness in generation", generation, "is:", np.max(fitness),
-			  ", avg fitness:", np.mean(fitness), '\033[0m')
+		# Stats
+		max_fitness = np.max(fitness)
+		avg_fitness = np.mean(fitness)
+		print('\033[94m', "Best fitness in generation", generation, "is:", max_fitness,
+			  ", avg fitness:", avg_fitness, '\033[0m')
+		diversity = calculate_diversity(population)
+		print('\033[94m', "The population diversity", generation, "is:", diversity, '\033[0m')
+		stats.append([generation, np.max(fitness), np.mean(fitness), diversity])
 
+		# Save
+		main.save_population(population)
+		main.save_best_robot(population[np.argmax(fitness)])
+
+		# Build new population using the new weights
 		population = []
 		for r in range(population_size):
 			population.append(Robot(WIDTH, HEIGHT, wall_list, weights=new_population_weights[r]))
-		diversity = calculate_diversity(population)
-		stats.append([generation, np.max(fitness), np.mean(fitness), diversity])
-		print('\033[94m', "The population diversity", generation, "is:", diversity, '\033[0m')
-		main.save_population(population)
-		main.save_best_robot(population[np.argmax(fitness)])
 
 		if generation > 0:
 			plt.figure()

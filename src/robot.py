@@ -127,7 +127,7 @@ class Robot():
 		sensor_values = [shape(sensor.value) for sensor in self.sensors]
 
 		# Propagate ANN
-		outputs = self.nn.propagate(sensor_values)
+		outputs = self.nn.propagate(sensor_values) * 5
 		self.speed = outputs
 
 		# Update position
