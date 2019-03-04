@@ -7,7 +7,7 @@ from src.robot import Robot
 from src.wall import Wall
 import main
 
-# Build the invironment for a robot
+# Build the environment for a robot
 WIDTH = 1040
 HEIGHT = 700
 SCALE = 50
@@ -28,13 +28,14 @@ wall_list.append(Wall((padding * 2, padding), (padding, HEIGHT - padding)))
 wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
 
-def run_robot_simulation(robot, times=1000):
+def run_robot_simulation(robot, times=100):
     """
     Start the simulation of movement of a robot and calculate the fitness
     :param robot:
     :param times: how many times calculate update the fitness
     :return: fitness of the robot
     """
+    # TODO: simulate in 3 different initial positions
     # Start simulation of movement
     for i in range(times):
         robot.update_position()
@@ -61,6 +62,8 @@ def calculate_diversity(population):
                             res += smth
                 return res
 
+def get_best_individual():
+    return Robot(WIDTH, HEIGHT, wall_list, main.load_best_weights())
 
 def genetics(n_generation=6, population_size=100, n_selected=5, load_population=False):
     if load_population:
@@ -72,9 +75,11 @@ def genetics(n_generation=6, population_size=100, n_selected=5, load_population=
             population.append(Robot(WIDTH, HEIGHT, wall_list))
 
     for generation in range(n_generation):
-        fitness = np.array([run_robot_simulation(robot) for robot in population])
+        # Simulate fitness for each individual
+        fitness = np.array([run_robot_simulation(robot, times=200) for robot in population])
         for pos, robot in enumerate(fitness):
             print("Robot", pos, "fitness:", robot)
+
         best_idx = np.argpartition(fitness, -n_selected)[-n_selected:]
         best_robots = [population[idx] for idx in best_idx]
         new_population_weights = []

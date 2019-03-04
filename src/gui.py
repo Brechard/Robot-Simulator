@@ -3,6 +3,7 @@ from datetime import datetime
 
 import pygame
 from pygame.locals import *
+import numpy as np
 
 from neuralnet import *
 from src.helper import *

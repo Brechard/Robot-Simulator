@@ -1,6 +1,6 @@
 import numpy as np
 
-from robot import Robot
+from src.robot import Robot
 
 
 def load_population(WIDTH, HEIGHT, wall_list):
@@ -26,14 +26,14 @@ def save_population(population):
         weights.append(robot.get_NN_weights_flatten())
 
     weights = np.array(weights)
-    np.savetxt("weights.txt", weights, fmt='%d')
+    np.savetxt("weights.txt", weights)
     print("Population weights saved")
 
 
 def save_best_robot(robot):
-    np.savetxt("best_robot.txt", robot.get_NN_weights_flatten(), fmt='%d')
+    np.savetxt("best_robot.txt", robot.get_NN_weights_flatten())
 
 
 def load_best_weights():
     """ Return the weights of the best robot of the population """
-    return np.loadtxt('best_robot.txt', dtype=int)
+    return np.loadtxt('best_robot.txt', dtype=float)

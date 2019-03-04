@@ -28,7 +28,7 @@ class Robot():
         self.old_x, self.old_y = np.digitize(self.x, self.horizontal_bins), np.digitize(self.y, self.vertical_bins)
 
 
-        self.nn = RNN(inputs=12, outputs=2, hidden_layer_size=5, weights=weights)
+        self.nn = RNN(inputs=12, outputs=2, hidden_layer_size=6, weights=weights)
 
         self.sensors = []
         num_sensors = 12
@@ -114,12 +114,20 @@ class Robot():
         apply corresponding formula.
         """
 
-        # TODO implement genetic algorithm
-        outputs = self.nn.propagate([sensor.value for sensor in self.sensors])
+        # Shape feedback of sensors (distance measure should not be linear)
+        # Closer to wall = exponentially higher sensor value
+        # Far away from wall = 0
+        def shape(x):
+            exp = 2
+            return (Sensor.MAX_SENSOR_VALUE - x) ** exp
+        sensor_values = [shape(sensor.value) for sensor in self.sensors]
+
+        # Propagate ANN
+        outputs = self.nn.propagate(sensor_values)
         self.speed = outputs
 
+        # Update position
         self.check_if_rotates()
-
         if self.is_rotating:
             omega = self.calculate_rate_of_rotation()
             R = self.calculate_R()
