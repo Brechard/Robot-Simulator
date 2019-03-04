@@ -42,8 +42,8 @@ def run_robot_simulation(robot, times=100, draw=False):
     :param times: how many times calculate update the fitness
     :return: fitness of the robot
     """
-	# initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
-	initial_positions = [(100, 150, 0)]
+	initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
+	# initial_positions = [(100, 150, 0)]
 	fitness = 0
 	for j in range(len(initial_positions)):
 		# Start simulation of movement
@@ -81,23 +81,25 @@ def calculate_diversity(population):
 				return res
 
 
-def get_best_individual():
-	return Robot(WIDTH, HEIGHT, wall_list, main.load_best_weights())
+def get_best_individual(path):
+	return Robot(WIDTH, HEIGHT, wall_list, main.load_best_weights(path))
 
 
-def genetics(n_generation=6, population_size=30, n_selected=5, mutation_rate=0.05, elitism=0.1, load_population=False, draw=False):
-	if load_population:
-		population = main.load_population(WIDTH, HEIGHT, wall_list)
+def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=500,
+			 mutation_rate=0.05, elitism=0.1, load_population='', draw=False):
+	if load_population != '':
+		population = main.load_population(WIDTH, HEIGHT, wall_list, load_population)
 	else:
 		population = []
 		for r in range(population_size):
 			""" Since we are starting the population, we don't send weights so that they are created randomly"""
 			population.append(Robot(WIDTH, HEIGHT, wall_list))
+		print("Initialized random population. size: ", population_size)
 
 	stats = []
 	for generation in range(n_generation):
 		# Simulate fitness for each individual
-		fitness = np.array([run_robot_simulation(robot, times=450, draw=draw) for robot in population])
+		fitness = np.array([run_robot_simulation(robot, times=simulation_steps, draw=draw) for robot in population])
 		for pos, robot in enumerate(fitness):
 			print("Robot", pos, "fitness:", robot)
 
@@ -111,7 +113,7 @@ def genetics(n_generation=6, population_size=30, n_selected=5, mutation_rate=0.0
 			# crossover between 2 random parents
 			random.shuffle(best_robots)
 			parent_1, parent_2 = best_robots[:2]
-			crossover = crossover_mutation.one_point_crossover(parent_1.get_NN_weights_flatten(),
+			crossover = crossover_mutation.two_point_crossover(parent_1.get_NN_weights_flatten(),
 															   parent_2.get_NN_weights_flatten())
 
 			# Mutation
@@ -133,8 +135,8 @@ def genetics(n_generation=6, population_size=30, n_selected=5, mutation_rate=0.0
 		stats.append([generation, np.max(fitness), np.mean(fitness), diversity])
 
 		# Save
-		main.save_population(population)
-		main.save_best_robot(population[np.argmax(fitness)])
+		main.save_population(population, generation)
+		main.save_best_robot(population[np.argmax(fitness)], generation)
 
 		# Build new population using the new weights
 		population = []
