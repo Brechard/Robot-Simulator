@@ -8,9 +8,10 @@ from src.wall import Wall
 import main
 from matplotlib import pyplot as plt
 
-from multiprocessing import Pool as ThreadPool
-NUM_THREADS = 5
+NUM_THREADS = 10
 # NUM_THREADS = 1  # Set to 1 to disable multiprocessing
+if NUM_THREADS > 1:
+	from multiprocessing import Pool as ThreadPool
 
 # Build the environment for a robot
 # WIDTH = 840
@@ -103,6 +104,7 @@ def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=
 		print("Initialized random population. size: ", population_size)
 
 	stats = []
+	pool = ThreadPool(NUM_THREADS)
 	for generation in range(n_generation):
 		# Simulate fitness for each individual
 		fitness = [None] * population_size
@@ -111,8 +113,7 @@ def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=
 			for pos, robot in enumerate(fitness):
 				print("Robot", pos, "fitness:", robot)
 		else:
-			# Use a thread pool
-			pool = ThreadPool(10)
+			# Use the thread pool
 			inputs = []
 			for i, robot in enumerate(population):
 				inputs.append([robot, simulation_steps, False])
