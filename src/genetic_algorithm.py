@@ -14,10 +14,10 @@ if NUM_THREADS > 1:
 	from multiprocessing import Pool as ThreadPool
 
 # Build the environment for a robot
-# WIDTH = 840
-# HEIGHT = 600
-WIDTH = 500
-HEIGHT = 350
+WIDTH = 840
+HEIGHT = 600
+# WIDTH = 500
+# HEIGHT = 350
 
 # Build the walls
 wall_list = []
@@ -42,15 +42,16 @@ wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - pad
 def run_robot_simulation(params):
 	"""
 	Start the simulation of movement of a robot and calculate the fitness using multiple initial positions
-	:param robot:
-	:param times: how many times calculate update the fitness
+	:params 0 robot: Robot object
+	:params 1 times: how many times calculate update the fitness
+	:params 2 draw: T/F enable GFX
 	:return: fitness of the robot
 	"""
 	robot = params[0]
 	times = params[1]
 	draw = params[2]
-	# initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
-	initial_positions = [(100, 150, 0)]
+	initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
+	# initial_positions = [(100, 150, 0)]
 	fitness = 0
 	for j in range(len(initial_positions)):
 		# Start simulation of movement
@@ -68,24 +69,15 @@ def run_robot_simulation(params):
 
 
 def calculate_diversity(population):
-	# TODO Check this method
+	""" Sum of Euclidean distances """
 	diversity = 0
 	for i in (range(len(population))):
 		for j in range(len(population)):
 			if i != j:
-				first_robot = population[i]
-				second_robot = population[j]
-				# for k in range(len(first_robot.nn.weights)):
-				#     for l in range(len(first_robot.nn.weights[k])):
-				#         diversity += abs(first_robot.nn.weights[k][l] - second_robot.nn.weights[k][l])
-
-				result = np.absolute(first_robot.get_NN_weights() - second_robot.get_NN_weights())
-				res = 0
-				for row in result:
-					for column in row:
-						for smth in column:
-							res += smth
-				return res
+				a = np.asarray(population[i].get_NN_weights_flatten())
+				b = np.asarray(population[j].get_NN_weights_flatten())
+				diversity += np.linalg.norm(a - b)
+	return diversity
 
 
 def get_best_individual(path):
@@ -160,10 +152,19 @@ def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=
 			population.append(Robot(WIDTH, HEIGHT, wall_list, weights=new_population_weights[r]))
 
 		if generation > 0:
-			plt.figure()
-			plt.plot(np.array(stats)[:,1], '-r', label='max fitness')
-			plt.plot(np.array(stats)[:,2], '-b', label='avg fitness')
-			plt.legend()
+			fig, ax1 = plt.subplots()
+			ax1.plot(np.array(stats)[:,1], '-r', label='max fitness')
+			ax1.plot(np.array(stats)[:,2], '--tomato', label='avg fitness')
+			ax1.set_xlabel('Generation')
+			ax1.set_ylabel('Fitness', color='r')
+			ax1.tick_params('y', colors='r')
+
+			ax2 = ax1.twinx()
+			ax2.plot(np.array(stats)[:,3], '-k', label='diversity')
+			ax2.set_ylabel('Diversity', color='k')
+
+			fig.legend()
+			fig.tight_layout()
 			plt.show()
 
 	return population[np.argmax(fitness)]

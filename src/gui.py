@@ -10,10 +10,10 @@ from src.helper import *
 from src.robot import Robot
 from src.wall import Wall
 
-# WIDTH = 840
-# HEIGHT = 600
-WIDTH = 500
-HEIGHT = 350
+WIDTH = 840
+HEIGHT = 600
+# WIDTH = 500
+# HEIGHT = 350
 
 # some colors
 black = (0, 0, 0)
