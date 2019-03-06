@@ -7,7 +7,7 @@ from src.sensor import Sensor
 
 
 class Robot():
-	def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=200):
+	def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40):
 		self.x = 100
 		self.y = 150
 		self.theta = 0

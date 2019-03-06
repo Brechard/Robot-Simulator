@@ -10,12 +10,14 @@ from src.helper import *
 from src.robot import Robot
 from src.wall import Wall
 
-WIDTH = 840
-HEIGHT = 600
+# WIDTH = 840
+# HEIGHT = 600
+WIDTH = 500
+HEIGHT = 350
 
 # some colors
 black = (0, 0, 0)
-dust = (100, 100, 100)
+dust = (220, 225, 234)
 blue = (20, 80, 155)
 red = (255, 0, 0)
 pygame.font.init()
@@ -37,11 +39,11 @@ class GFX:
         self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
         self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
-        padding = 230
-        self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
-        self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-        self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
-        self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+        # padding = 230
+        # self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
+        # self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
+        # self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
+        # self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
         # self.wall_list.append(Wall((padding * 2, padding), (WIDTH - padding, padding)))
         # self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
         # self.wall_list.append(Wall((padding * 2, padding), (padding, HEIGHT - padding)))
@@ -128,6 +130,10 @@ class GFX:
         # Reset screen
         self.screen.fill([255, 255, 255])
 
+        # Dust
+        for visit in self.visited_arr:
+            pygame.draw.circle(self.screen, dust, visit, self.robot.radius-5, 0)
+
         # Draw walls
         for wall in self.wall_list:
             pygame.draw.line(self.screen, black, wall.p1, wall.p2)
@@ -137,9 +143,6 @@ class GFX:
             pygame.draw.line(self.screen, red, self.robot.get_pos(), sensor.p2)
             text_surface = font.render(str(i) + ": " + "{0:.0f}".format(sensor.value), False, red)
             self.screen.blit(text_surface, sensor.p2)
-
-        for visit in self.visited_arr:
-            pygame.draw.circle(self.screen, dust, visit, 5, 0)
 
         # Robot
         pygame.draw.circle(self.screen, blue, self.robot.get_pos(), self.robot.radius, 0)
@@ -162,7 +165,7 @@ class GFX:
         self.screen.blit(text_surface, (200, HEIGHT - 60))
 
         text_surface = font.render("updates: " + str(int(len(self.robot.fitness_history))), False, red)
-        self.screen.blit(text_surface, (370, HEIGHT - 60))
+        self.screen.blit(text_surface, (340, HEIGHT - 60))
 
         pygame.display.update()
 

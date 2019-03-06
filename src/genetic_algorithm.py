@@ -8,12 +8,15 @@ from src.wall import Wall
 import main
 from matplotlib import pyplot as plt
 
+from multiprocessing import Pool as ThreadPool
+NUM_THREADS = 5
+# NUM_THREADS = 1  # Set to 1 to disable multiprocessing
+
 # Build the environment for a robot
-WIDTH = 840
-HEIGHT = 600
-SCALE = 200
-vertical_bins = np.linspace(0, HEIGHT, num=SCALE)
-horizontal_bins = np.linspace(0, WIDTH, num=SCALE)
+# WIDTH = 840
+# HEIGHT = 600
+WIDTH = 500
+HEIGHT = 350
 
 # Build the walls
 wall_list = []
@@ -23,11 +26,11 @@ wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - pa
 wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
 wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
-padding = 230
-wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
-wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
-wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+# padding = 230
+# wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
+# wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
+# wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
+# wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
 # wall_list.append(Wall((padding * 2, padding), (WIDTH - padding, padding)))
 # wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
@@ -35,15 +38,18 @@ wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - pad
 # wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
 
-def run_robot_simulation(robot, times=100, draw=False):
+def run_robot_simulation(params):
 	"""
-    Start the simulation of movement of a robot and calculate the fitness using multiple initial positions
-    :param robot:
-    :param times: how many times calculate update the fitness
-    :return: fitness of the robot
-    """
-	initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
-	# initial_positions = [(100, 150, 0)]
+	Start the simulation of movement of a robot and calculate the fitness using multiple initial positions
+	:param robot:
+	:param times: how many times calculate update the fitness
+	:return: fitness of the robot
+	"""
+	robot = params[0]
+	times = params[1]
+	draw = params[2]
+	# initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
+	initial_positions = [(100, 150, 0)]
 	fitness = 0
 	for j in range(len(initial_positions)):
 		# Start simulation of movement
@@ -99,9 +105,18 @@ def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=
 	stats = []
 	for generation in range(n_generation):
 		# Simulate fitness for each individual
-		fitness = np.array([run_robot_simulation(robot, times=simulation_steps, draw=draw) for robot in population])
-		for pos, robot in enumerate(fitness):
-			print("Robot", pos, "fitness:", robot)
+		fitness = [None] * population_size
+		if draw or NUM_THREADS <= 1:
+			fitness = np.array([run_robot_simulation([robot, simulation_steps, draw]) for robot in population])
+			for pos, robot in enumerate(fitness):
+				print("Robot", pos, "fitness:", robot)
+		else:
+			# Use a thread pool
+			pool = ThreadPool(10)
+			inputs = []
+			for i, robot in enumerate(population):
+				inputs.append([robot, simulation_steps, False])
+			fitness = pool.map(run_robot_simulation, inputs)
 
 		# Reproduce
 		best_idx = np.argpartition(fitness, -n_selected)[-n_selected:]
