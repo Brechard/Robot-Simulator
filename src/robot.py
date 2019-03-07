@@ -1,12 +1,9 @@
-import math
-from src.neuralnet import *
-import numpy as np
-
 from src.helper import *
+from src.neuralnet import *
 from src.sensor import Sensor
 
 
-class Robot():
+class Robot:
 	def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40):
 		self.x = 100
 		self.y = 150
@@ -73,39 +70,39 @@ class Robot():
 
 	def calculate_speed(self):
 		"""
-        Calculate the speed of the robot basing on the wheel speed
-        :return: Velocity of the robot
-        """
+		Calculate the speed of the robot basing on the wheel speed
+		:return: Velocity of the robot
+		"""
 		return (self.speed[1] + self.speed[0]) / 2
 
 	def calculate_R(self):
 		"""
-        Calculate distance from midpoint to ICC basing on the wheel speed and width
-        :return:
-        """
+		Calculate distance from midpoint to ICC basing on the wheel speed and width
+		:return:
+		"""
 		return (self.wheel_dist / 2) * (self.speed[0] + self.speed[1]) / (self.speed[1] - self.speed[0])
 
 	def calculate_rate_of_rotation(self):
 		"""
-        Calculate rate of rotation basing on speed of the wheels
-        :return:
-        """
+		Calculate rate of rotation basing on speed of the wheels
+		:return:
+		"""
 		return (self.speed[1] - self.speed[0]) / self.wheel_dist
 
 	def get_ICC_coordinates(self, R):
 		"""
-        Calculate the coordinates of ICC
-        :param R: Distance from midpoint to ICC
-        :return: Coordinates of the ICC
-        """
+		Calculate the coordinates of ICC
+		:param R: Distance from midpoint to ICC
+		:return: Coordinates of the ICC
+		"""
 		R = self.calculate_R()
 		return (self.x - R * math.sin(self.theta)), (self.y + R * math.cos(self.theta))
 
 	def check_if_rotates(self):
 		"""
-        Checks if the velocities of the wheels are equal and returns corresponding True/False value
-        :return:
-        """
+		Checks if the velocities of the wheels are equal and returns corresponding True/False value
+		:return:
+		"""
 		if math.isclose(self.speed[0], self.speed[1]):
 			self.is_rotating = False
 		else:
@@ -113,9 +110,9 @@ class Robot():
 
 	def update_position(self):
 		"""
-        Updating position and angle of the robot. Firstly check if the rotation is present, then
-        apply corresponding formula.
-        """
+		Updating position and angle of the robot. Firstly check if the rotation is present, then
+		apply corresponding formula.
+		"""
 
 		# Shape feedback of sensors (distance measure should not be linear)
 		# Closer to wall = exponentially higher sensor value
@@ -196,3 +193,6 @@ class Robot():
 		self.fitness_history.append(self.fitness)
 		self.fitness += delta_fitness
 		self.old_x, self.old_y = x, y
+
+	def set_walls(self, walls):
+		self.walls = walls

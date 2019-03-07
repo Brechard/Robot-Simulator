@@ -31,13 +31,16 @@ class GFX:
     wall_list = []
     robot_size = 60
 
-    def __init__(self, weights=None):
+    def __init__(self, weights=None, wall_list=None):
         # Outer walls
         padding = 20
-        self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
-        self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-        self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
-        self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+        if wall_list:
+            self.wall_list = wall_list
+        else:
+            self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
+            self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
+            self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
+            self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
         # padding = 230
         # self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
@@ -174,6 +177,7 @@ class GFX:
 
     def set_robot(self, robot):
         self.robot = robot
+        self.wall_list = robot.walls
 
 # if __name__ == '__main__':
 #     pygame.init()

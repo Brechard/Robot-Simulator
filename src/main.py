@@ -1,7 +1,7 @@
-import numpy as np
-import os
 import datetime
-from src.robot import Robot
+import os
+
+import numpy as np
 
 DIR = 'weights/' + datetime.datetime.now().strftime("%m%d_%H%M%S")
 
@@ -15,9 +15,9 @@ def init_dir(i):
 
 def load_population(WIDTH, HEIGHT, wall_list, path):
 	"""
-    Load the weights of the population
-    @return population: array of robots
-    """
+	Load the weights of the population
+	@return population: array of robots
+	"""
 	weights = np.loadtxt(path + '/weights.txt', dtype=int)
 	population = []
 	for r_weights in weights:
@@ -28,9 +28,9 @@ def load_population(WIDTH, HEIGHT, wall_list, path):
 
 def save_population(population, i):
 	"""
-    Save the weights of all the population
-    :param population: Array that contains  all the robots of the population to save
-    """
+	Save the weights of all the population
+	:param population: Array that contains  all the robots of the population to save
+	"""
 	weights = []
 	for robot in population:
 		weights.append(robot.get_NN_weights_flatten())
@@ -58,12 +58,15 @@ from src.robot import Robot
 def main():
 	# best_robot = g.genetics(load_population='weights/0304-194633', n_generation=1)
 
-	best_robot = g.genetics(n_generation=50, population_size=30, n_selected=20, elitism=0.05, simulation_steps=300, draw=False)
+	best_robot = g.genetics(n_generation=30, population_size=30, n_selected=10, elitism=0.05, simulation_steps=500,
+							draw=False)
 	# best_robot = g.get_best_individual('weights/0306_222607/gen30')
-	# best_robot = g.get_best_individual('weights/0306_223515/gen49')
-
+	# best_robot = g.get_best_individual('weights/0307_185311/gen19')
+	import rooms
+	# best_robot = Robot(g.WIDTH, g.HEIGHT, rooms.room_1)
 	gui = GFX()
-	best_robot.set_pos(100,150,0)
+	best_robot.set_pos(100, 150, 0)
+	best_robot.set_walls(rooms.room_3)
 	# best_robot.set_pos(genetic_algorithm.WIDTH-100,150, 30)
 	# best_robot.set_pos(100, g.HEIGHT - 150, 145)
 	gui.set_robot(best_robot)
