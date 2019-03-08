@@ -16,7 +16,7 @@ def one_point_crossover(parent_1, parent_2):
 
 def two_point_crossover(parent_1, parent_2):
     length = len(parent_1)
-    point1 = random.randrange(0, int(length - 1*0.66))  # Put the first point somewhere in the first two thirds
+    point1 = random.randrange(0, int(length - 1*0.65))
     point2 = random.randrange(point1, length - 1)
     parent_1partA = parent_1[0:point1]
     parent_1partB = parent_1[point1:point2]

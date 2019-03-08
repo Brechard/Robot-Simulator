@@ -152,8 +152,9 @@ class GFX:
         # Sensors
         for i, sensor in enumerate(self.robot.sensors):
             pygame.draw.line(self.screen, red, self.robot.get_pos(), sensor.p2)
-            text_surface = font.render(str(i) + ": " + "{0:.0f}".format(sensor.value), False, red)
-            self.screen.blit(text_surface, sensor.p2)
+            if sensor.value < sensor.MAX_SENSOR_VALUE:
+                text_surface = font.render(str(i) + ": " + "{0:.0f}".format(sensor.value), False, red)
+                self.screen.blit(text_surface, sensor.p2)
 
         # Robot
         pygame.draw.circle(self.screen, blue, self.robot.get_pos(), self.robot.radius, 0)

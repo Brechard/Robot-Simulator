@@ -123,16 +123,17 @@ class Robot:
 
 		# Shape feedback of sensors (distance measure should not be linear)
 		# Closer to wall = exponentially higher sensor value
-		# Far away from wall = 0
+		# Far away from wall = 0 + 1 (we add 1 to prevent 0 multiplication when there is no wall in sight)
 		def shape(x):
 			exp = 2
-			return (Sensor.MAX_SENSOR_VALUE - x) ** exp
+			return ((Sensor.MAX_SENSOR_VALUE - x) ** exp) + 1
 
 		sensor_values = [shape(sensor.value) for sensor in self.sensors]
 
 		# Propagate ANN
 		outputs = self.nn.propagate(sensor_values) * 5
 		self.speed = outputs
+		# self.speed = [0,0]
 
 		# Update position
 		self.check_if_rotates()

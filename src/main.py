@@ -59,30 +59,32 @@ import rooms
 def main():
 
 	n_generations = 50
-	population_size = 10
-	n_selected = 5
+	population_size = 50
+	n_selected = 20
 	elitism = 0.05
 	simulation_steps = 2000
 	draw = False
-	mutation_rate = 0.0
+	mutation_rate = 0.02
 	# robot_rooms = [rooms.room_1, rooms.room_2, rooms.room_3]
-	robot_rooms = [rooms.room_3]
+	robot_rooms = [rooms.room_2, rooms.room_3]
+	# robot_rooms = [rooms.room_3]
 
 	best_robot = g.genetics(n_generation=n_generations, population_size=population_size, n_selected=n_selected,
 							elitism=elitism, simulation_steps=simulation_steps, robot_rooms=robot_rooms,
 							draw=draw, mutation_rate=mutation_rate)
 
 	# best_robot = g.get_best_individual('weights/0307_204249/gen30')
-	# best_robot = g.get_best_individual('weights/0307_185311/gen19')
+	# best_robot = g.get_best_individual('weights/0308_224541/gen49')
 
-	# best_robot = Robot(g.WIDTH, g.HEIGHT, rooms.room_1)
+	# best_robot = Robot(g.WIDTH, g.HEIGHT, rooms.room_3)
 	gui = GFX()
-	best_robot.set_pos(100, 150, 0)
-	best_robot.set_walls(rooms.room_1)
-	# best_robot.set_pos(genetic_algorithm.WIDTH-100,150, 30)
+	best_robot.set_walls(rooms.room_3)
+	best_robot.set_pos(300, 450, 0)
+	# best_robot.set_pos(600, 300, 0)
+	# best_robot.set_pos(130, 150, 0)
 	# best_robot.set_pos(100, g.HEIGHT - 150, 145)
 	gui.set_robot(best_robot)
-	gui.main(True, 10000)
+	gui.main(draw=True, max_time=50000, kill_when_stuck=False)
 
 
 if __name__ == "__main__":

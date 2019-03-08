@@ -10,7 +10,7 @@ from src.gui import GFX
 from src.neuralnet import *
 from src.robot import Robot
 
-NUM_THREADS = 10
+NUM_THREADS = 4
 # NUM_THREADS = 1  # Set to 1 to disable multiprocessing
 
 # Build the environment for a robot
@@ -35,8 +35,9 @@ def run_robot_simulation(params):
 	times = params[1]
 	draw = params[2]
 	wall_list = params[3]
-	# initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
-	initial_positions = [(100, 150, 0)]
+	initial_positions = [(130, 150, 0), (300, 450, 30), (100, HEIGHT - 150, 145)]
+	# initial_positions = [(130, 150, 0)]
+	# initial_positions = [(600, 300, 0)]
 	fitness = 0
 	for j in range(len(initial_positions)):
 		# Start simulation of movement
