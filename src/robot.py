@@ -15,14 +15,21 @@ class Robot:
 		self.width = WIDTH
 		self.height = HEIGHT
 		self.walls = walls
-		self.fitness = 0
-		self.fitness_history = []
 		self.scale = SCALE
 		self.vertical_bins = np.linspace(0, HEIGHT, num=SCALE)
 		self.horizontal_bins = np.linspace(0, WIDTH, num=SCALE)
 		self.visited = np.zeros((SCALE, SCALE))
 		self.visited_arr = []
-		self.old_x, self.old_y = np.digitize(self.x, self.horizontal_bins), np.digitize(self.y, self.vertical_bins)
+		self.old_x_bin, self.old_y_bin = np.digitize(self.x, self.horizontal_bins), np.digitize(self.y, self.vertical_bins)
+		self.prev_x = self.x
+		self.prev_y = self.y
+		self.prev_theta = self.theta
+
+		# Fitness stats
+		self.fitness = 0
+		self.n_not_moved = 0
+		self.n_collisions = 0
+		self.n_visited_bins = 0
 
 		self.nn = RNN(inputs=12, outputs=2, hidden_layer_size=6, weights=weights)
 
@@ -171,8 +178,6 @@ class Robot:
 		collided = self.check_sensors()
 		x, y = int(round(self.x)), int(round(self.y))
 
-		delta_fitness = 0
-
 		x_bin_idx = np.digitize(x, self.horizontal_bins)
 		y_bin_idx = np.digitize(y, self.vertical_bins)
 
@@ -180,19 +185,43 @@ class Robot:
 		if self.visited[x_bin_idx, y_bin_idx] == 0:
 			self.visited[x_bin_idx, y_bin_idx] = 1
 			self.visited_arr.append([x, y])
-			delta_fitness += 2
+			self.n_visited_bins += 1
 
 		# Decrease fitness if wall collided
 		if collided:
-			delta_fitness -= 5
+			self.n_collisions += 1
 
 		# Decrease fitness if didnt move in discrete space:
-		if self.old_x == x_bin_idx and self.old_y == y_bin_idx:
-			delta_fitness -= 1
+		# if self.old_x_bin == x_bin_idx and self.old_y_bin == y_bin_idx:
+		# 	delta_fitness -= 1
 
-		self.fitness_history.append(self.fitness)
-		self.fitness += delta_fitness
-		self.old_x, self.old_y = x, y
+		# Count the number of updates the robot has not moved
+		# if self.prev_x == self.x and self.prev_y == self.y and self.prev_theta == self.theta:
+		if round(self.prev_x) == round(self.x) and round(self.prev_y) == round(self.y):
+			self.n_not_moved += 1
+		else:
+			self.n_not_moved = 0
+
+		self.fitness = self.cost_function()
+
+		# Save old bin and real pos
+		self.old_x_bin, self.old_y_bin = x, y
+		self.prev_x = self.x
+		self.prev_y = self.y
+		self.prev_theta = self.theta
+
+	def cost_function(self):
+		"""Cost functions"""
+		f = 2
+
+		# Function 1: only covered distance
+		if f == 1:
+			return self.n_visited_bins
+
+		# Function 2: covered distance minus log(collisions)
+		if f == 2:
+			return self.n_visited_bins - math.log(self.n_collisions+1)*10
+
 
 	def set_walls(self, walls):
 		self.walls = walls

@@ -12,8 +12,6 @@ from src.robot import Robot
 
 NUM_THREADS = 10
 # NUM_THREADS = 1  # Set to 1 to disable multiprocessing
-if NUM_THREADS > 1:
-	from multiprocessing import Pool as ThreadPool
 
 # Build the environment for a robot
 WIDTH = 840
@@ -37,8 +35,8 @@ def run_robot_simulation(params):
 	times = params[1]
 	draw = params[2]
 	wall_list = params[3]
-	initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
-	# initial_positions = [(100, 150, 0)]
+	# initial_positions = [(100, 150, 0), (WIDTH - 100, 150, 30), (100, HEIGHT - 150, 145)]
+	initial_positions = [(100, 150, 0)]
 	fitness = 0
 	for j in range(len(initial_positions)):
 		# Start simulation of movement
@@ -47,10 +45,15 @@ def run_robot_simulation(params):
 		if not draw:
 			for i in range(times):
 				bot.update_position()
+
+				# If robot is stuck, terminate the simulation
+				if bot.n_not_moved > 50:
+					bot.fitness = -100
+					break
 		else:
 			gui = GFX(wall_list=wall_list)
 			gui.set_robot(bot)
-			gui.main(True, times)
+			gui.main(True, max_time=times, kill_when_stuck=True)
 		fitness += bot.fitness
 	return fitness
 
@@ -72,9 +75,8 @@ def get_best_individual(path):
 
 
 def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=500,
-			 mutation_rate=0.05, elitism=0.1, load_population='', draw=False):
-	robot_rooms = [rooms.room_1, rooms.room_2, rooms.room_3]
-
+			 mutation_rate=0.05, elitism=0.1, robot_rooms=[rooms.room_1, rooms.room_2, rooms.room_3],
+			 load_population='', draw=False):
 	if load_population != '':
 		population = main.load_population(WIDTH, HEIGHT, wall_list, load_population)
 	else:
@@ -85,14 +87,19 @@ def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=
 		print("Initialized random population. size: ", population_size)
 
 	stats = []
-	pool = ThreadPool(NUM_THREADS)
+	multiprocessing = False
+	if not draw and NUM_THREADS > 1:
+		from multiprocessing import Pool as ThreadPool
+		pool = ThreadPool(NUM_THREADS)
+		multiprocessing = True
 	for generation in range(n_generation):
 		# Simulate fitness for each individual
 		fitness = np.zeros((len(robot_rooms), population_size))
 		for i, room in enumerate(robot_rooms):
 			# Execute every robot in every room
-			if draw or NUM_THREADS <= 1:
-				fitness[i] = np.array([run_robot_simulation([robot, simulation_steps, draw, room]) for robot in population])
+			if not multiprocessing:
+				fitness[i] = np.array(
+					[run_robot_simulation([robot, simulation_steps, draw, room]) for robot in population])
 				for pos, robot in enumerate(fitness):
 					print("Robot", pos, "fitness:", robot)
 			else:
@@ -104,8 +111,9 @@ def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=
 
 		# The final fitness of each robot is the average fitness achieved in the different rooms
 		fitness = [np.average(fitness[:, robot]) for robot in range(population_size)]
+
 		# Reproduce
-		best_idx = np.argpartition(fitness, -n_selected)[-n_selected:]
+		best_idx = (-np.array(fitness)).argsort()[:n_selected]
 		best_robots = [population[idx] for idx in best_idx]
 		new_population_weights = []
 		num_offspring = int(population_size * (1 - elitism))
@@ -147,14 +155,14 @@ def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=
 		if generation > 0 and generation % 5 == 0 or generation == n_generation - 1:
 			fig, ax1 = plt.subplots()
 			ax1.plot(np.array(stats)[:, 1], '-r', label='max fitness')
-			ax1.plot(np.array(stats)[:, 2], '-b', label='avg fitness')
+			ax1.plot(np.array(stats)[:, 2], '--r', label='avg fitness')
 			ax1.set_xlabel('Generation')
 			ax1.set_ylabel('Fitness', color='r')
 			ax1.tick_params('y', colors='r')
 
 			ax2 = ax1.twinx()
-			ax2.plot(np.array(stats)[:, 3], '-k', label='diversity')
-			ax2.set_ylabel('Diversity', color='k')
+			ax2.plot(np.array(stats)[:, 3], '-b', label='diversity')
+			ax2.set_ylabel('Diversity', color='b')
 
 			fig.legend()
 			fig.tight_layout()
