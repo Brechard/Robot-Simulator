@@ -5,11 +5,11 @@ HEIGHT = 600
 
 # Base room that contains only the outer walls
 base_room = []
-padding = 20
-base_room.append(Wall((padding, padding), (WIDTH - padding, padding)))
-base_room.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-base_room.append(Wall((padding, padding), (padding, HEIGHT - padding)))
-base_room.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+padding_base = 20
+base_room.append(Wall((padding_base, padding_base), (WIDTH - padding_base, padding_base)))
+base_room.append(Wall((padding_base, HEIGHT - padding_base), (WIDTH - padding_base, HEIGHT - padding_base)))
+base_room.append(Wall((padding_base, padding_base), (padding_base, HEIGHT - padding_base)))
+base_room.append(Wall((WIDTH - padding_base, padding_base), (WIDTH - padding_base, HEIGHT - padding_base)))
 
 
 def get_base_room():
@@ -38,3 +38,10 @@ room_3.append(Wall((padding, padding), (WIDTH - padding, padding)))
 room_3.append(Wall((padding, padding), (padding, HEIGHT - padding)))
 room_3.append(Wall((WIDTH / 2, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
 room_3.append(Wall((WIDTH / 2, HEIGHT - padding), (WIDTH / 2, HEIGHT /2)))
+
+room_4 = get_base_room()
+padding = 150
+room_4.append(Wall((padding, padding_base), (padding, HEIGHT - padding * 2)))
+room_4.append(Wall((WIDTH - padding, padding * 2), (WIDTH - padding, HEIGHT - padding_base)))
+room_4.append(Wall((WIDTH / 2, padding), (WIDTH / 2, HEIGHT - padding)))
+room_4.append(Wall((padding * 2, HEIGHT / 2), (WIDTH - padding * 2, HEIGHT / 2)))
