@@ -38,3 +38,11 @@ room_3.append(Wall((padding, padding), (WIDTH - padding, padding)))
 room_3.append(Wall((padding, padding), (padding, HEIGHT - padding)))
 room_3.append(Wall((WIDTH / 2, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
 room_3.append(Wall((WIDTH / 2, HEIGHT - padding), (WIDTH / 2, HEIGHT /2)))
+
+# Room 4: small room
+room_4 = []
+padding = 30
+room_4.append(Wall((padding, padding), (WIDTH/2 - padding, padding)))
+room_4.append(Wall((padding, HEIGHT - padding), (WIDTH/2 - padding, HEIGHT - padding)))
+room_4.append(Wall((padding, padding), (padding, HEIGHT - padding)))
+room_4.append(Wall((WIDTH/2 - padding, padding), (WIDTH/2 - padding, HEIGHT - padding)))
