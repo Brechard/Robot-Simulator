@@ -38,7 +38,7 @@ def run_robot_simulation(params):
 	initial_positions = [(130, 150, 0), (300, 450, 30), (100, HEIGHT - 150, 145)]
 	# initial_positions = [(130, 150, 0)]
 	# initial_positions = [(600, 300, 0)]
-	fitness = 0
+	fitness = []
 	for j in range(len(initial_positions)):
 		# Start simulation of movement
 		bot = Robot(WIDTH, HEIGHT, wall_list, weights=robot.get_NN_weights_flatten())
@@ -55,8 +55,12 @@ def run_robot_simulation(params):
 			gui = GFX(wall_list=wall_list)
 			gui.set_robot(bot)
 			gui.main(True, max_time=times, kill_when_stuck=True)
-		fitness += bot.fitness
-	return fitness
+		fitness.append(bot.fitness)
+
+	# Return the fitness of the robot in the given room
+	# return np.min(fitness)
+	# return np.sum(fitness)
+	return np.mean(fitness)
 
 
 def calculate_diversity(population):
@@ -112,6 +116,7 @@ def genetics(n_generation=6, population_size=30, n_selected=5, simulation_steps=
 
 		# The final fitness of each robot is the average fitness achieved in the different rooms
 		fitness = [np.average(fitness[:, robot]) for robot in range(population_size)]
+		# fitness = [np.min(fitness[:, robot]) for robot in range(population_size)]
 
 		# Reproduce
 		best_idx = (-np.array(fitness)).argsort()[:n_selected]

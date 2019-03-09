@@ -96,7 +96,7 @@ class Robot:
 		"""
 		return (self.speed[1] - self.speed[0]) / self.wheel_dist
 
-	def get_ICC_coordinates(self, R):
+	def get_ICC_coordinates(self):
 		"""
 		Calculate the coordinates of ICC
 		:param R: Distance from midpoint to ICC
@@ -139,8 +139,7 @@ class Robot:
 		self.check_if_rotates()
 		if self.is_rotating:
 			omega = self.calculate_rate_of_rotation()
-			R = self.calculate_R()
-			ICC_x, ICC_y = self.get_ICC_coordinates(R)
+			ICC_x, ICC_y = self.get_ICC_coordinates()
 
 			# Calculation of the position and angle with the forward kinematics
 			rotation_matrix = np.array([[math.cos(omega), -math.sin(omega), 0],
