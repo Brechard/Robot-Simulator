@@ -12,11 +12,12 @@ def one_point_crossover(parent_1, parent_2):
     p1 = parent_1[:point] + parent_2[point:]  # possibility 1
     p2 = parent_2[:point] + parent_1[point:]  # possibility 2
     offspring = [p1, p2]
-    return offspring[random.randrange(0,len(offspring))]  # Return a random possibility
+    return offspring[random.randrange(0, len(offspring))]  # Return a random possibility
+
 
 def two_point_crossover(parent_1, parent_2):
     length = len(parent_1)
-    point1 = random.randrange(0, int(length - 1*0.65))
+    point1 = random.randrange(0, int(length - 1 * 0.65))
     point2 = random.randrange(point1, length - 1)
     parent_1partA = parent_1[0:point1]
     parent_1partB = parent_1[point1:point2]
@@ -25,16 +26,17 @@ def two_point_crossover(parent_1, parent_2):
     parent_2partB = parent_2[point1:point2]
     parent_2partC = parent_2[point2:]
 
-	# All posibilities of combining these 6 parts:
+    # All posibilities of combining these 6 parts:
     offspring = [
-		parent_1partA + parent_2partB + parent_1partC,
-		parent_2partA + parent_1partB + parent_2partC,
-		parent_2partA + parent_2partB + parent_1partC,
-		parent_1partA + parent_1partB + parent_2partC,
-		parent_2partA + parent_1partB + parent_1partC,
-		parent_1partA + parent_2partB + parent_2partC]
+        parent_1partA + parent_2partB + parent_1partC,
+        parent_2partA + parent_1partB + parent_2partC,
+        parent_2partA + parent_2partB + parent_1partC,
+        parent_1partA + parent_1partB + parent_2partC,
+        parent_2partA + parent_1partB + parent_1partC,
+        parent_1partA + parent_2partB + parent_2partC]
 
-    return offspring[random.randrange(0,len(offspring))]  # Return a random possibility
+    return offspring[random.randrange(0, len(offspring))]  # Return a random possibility
+
 
 def mutation_v1(genome, mutation_prob = 0.05, limit = 1):
     """ Apply a hard mutation using the mutation rate and the value limits """

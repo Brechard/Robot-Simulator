@@ -1,5 +1,5 @@
 import numpy as np
-from src.helper import *
+from helper import *
 
 
 class Wall():

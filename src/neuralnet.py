@@ -3,7 +3,7 @@ import numpy as np
 
 class RNN:
 
-    def __init__(self, inputs=12, outputs=2, hidden_layer_size=5, weights=None):
+    def __init__(self, inputs = 12, outputs = 2, hidden_layer_size = 5, weights = None):
         """
         When weights is not passed they will be created as random
         :param inputs: Corresponds to the number of sensors
@@ -23,7 +23,7 @@ class RNN:
             self.weights = self.initialize_random_weights()
             self.unflatten()
 
-    def initialize_random_weights(self, limit=5):
+    def initialize_random_weights(self, limit = 5):
         total_weights = (self.inputs + self.recurrent_nodes) * self.hidden_layer + self.hidden_layer * self.outputs
         # input_weights = np.random.uniform(-limit, limit, (self.inputs + self.recurrent_nodes, self.hidden_layer))
         # output_weights = np.random.uniform(-limit, limit, (self.hidden_layer, self.outputs))
@@ -39,9 +39,9 @@ class RNN:
 
     def unflatten(self):
         weights = np.asarray(self.weights)
-        n_hidden_layer_nodes = (self.inputs + self.recurrent_nodes)*self.hidden_layer
-        hidden_layer = weights[ : n_hidden_layer_nodes]
-        output_layer = weights[n_hidden_layer_nodes : ]
+        n_hidden_layer_nodes = (self.inputs + self.recurrent_nodes) * self.hidden_layer
+        hidden_layer = weights[: n_hidden_layer_nodes]
+        output_layer = weights[n_hidden_layer_nodes:]
         self.weights = []
         try:
             self.weights.append(hidden_layer.reshape((self.inputs + self.recurrent_nodes, self.hidden_layer)))

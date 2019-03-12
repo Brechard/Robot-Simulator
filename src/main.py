@@ -4,13 +4,14 @@ import os
 import numpy as np
 
 DIR = 'weights/' + datetime.datetime.now().strftime("%m%d_%H%M%S")
+RESULT_DIR = 'results/' + datetime.datetime.now().strftime("%m%d_%H%M%S")
 
 
-def init_dir(i):
-    dir = os.path.dirname(DIR + '/gen' + str(i) + '/w')
+def init_dir(i, directory = DIR):
+    dir = os.path.dirname(directory + '/gen' + str(i) + '/w')
     if not os.path.exists(dir):
         print('Saving weights in directory: ', dir)
-        os.makedirs(DIR + '/gen' + str(i))
+        os.makedirs(directory + '/gen' + str(i))
 
 
 def load_population(WIDTH, HEIGHT, wall_list, path):
@@ -50,9 +51,17 @@ def load_best_weights(dir):
     return np.loadtxt(dir + '/best_robot.txt', dtype = float)
 
 
+def save_performance_history(diversity, max_fitness, avg_fitness):
+    """
+    Saves the values of diversity, max fitness, average fitness
+    """
+    history = np.array([diversity, max_fitness, avg_fitness])
+    np.savetxt(RESULT_DIR + "foo.csv", history, delimiter = ",")
+
+
 import genetic_algorithm as g
-from src.gui import GFX
-from src.robot import Robot
+from gui import GFX
+from robot import Robot
 import rooms
 
 
@@ -62,18 +71,19 @@ def main():
     n_selected = 20
     elitism = 0.05
     simulation_steps = 2000
+
     draw = False
     mutation_rate = 0.02
-    # robot_rooms = [rooms.room_1, rooms.room_2, rooms.room_3]
-    robot_rooms = [rooms.room_2, rooms.room_3]
+    robot_rooms = [rooms.room_1, rooms.room_2, rooms.room_3]
+    # robot_rooms = [rooms.room_2, rooms.room_3]
     # robot_rooms = [rooms.room_3]
 
-    best_robot = g.genetics(n_generation = n_generations, population_size = population_size, n_selected = n_selected,
-                            elitism = elitism, simulation_steps = simulation_steps, robot_rooms = robot_rooms,
-                            draw = draw, mutation_rate = mutation_rate)
+    # best_robot = g.genetics(n_generation = n_generations, population_size = population_size, n_selected = n_selected,
+    #                         elitism = elitism, simulation_steps = simulation_steps, robot_rooms = robot_rooms,
+    #                         draw = draw, mutation_rate = mutation_rate)
 
     # best_robot = g.get_best_individual('weights/0307_204249/gen30')
-    # best_robot = g.get_best_individual('weights/0308_224541/gen49')
+    best_robot = g.get_best_individual('/Users/erytheis/PycharmProjects/Robot-Simulator/src/weights/0312_002820/gen49')
     # best_robot = Robot(g.WIDTH, g.HEIGHT, rooms.room_3)
     gui = GFX()
     best_robot.set_walls(rooms.room_3)

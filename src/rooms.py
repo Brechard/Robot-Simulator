@@ -1,4 +1,4 @@
-from src.wall import Wall
+from wall import Wall
 
 WIDTH = 840
 HEIGHT = 600
@@ -6,6 +6,7 @@ HEIGHT = 600
 # Base room that contains only the outer walls
 base_room = []
 padding = 20
+padding_base =20
 base_room.append(Wall((padding, padding), (WIDTH - padding, padding)))
 base_room.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
 base_room.append(Wall((padding, padding), (padding, HEIGHT - padding)))
@@ -38,3 +39,10 @@ room_3.append(Wall((padding, padding), (WIDTH - padding, padding)))
 room_3.append(Wall((padding, padding), (padding, HEIGHT - padding)))
 room_3.append(Wall((WIDTH / 2, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
 room_3.append(Wall((WIDTH / 2, HEIGHT - padding), (WIDTH / 2, HEIGHT /2)))
+
+room_5 = get_base_room()
+padding = 150
+room_5.append(Wall((padding, padding_base), (padding, HEIGHT - padding * 2)))
+room_5.append(Wall((WIDTH - padding, padding * 2), (WIDTH - padding, HEIGHT - padding_base)))
+room_5.append(Wall((WIDTH / 2, padding), (WIDTH / 2, HEIGHT - padding)))
+room_5.append(Wall((padding * 2, HEIGHT / 2), (WIDTH - padding * 2, HEIGHT / 2)))

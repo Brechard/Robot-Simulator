@@ -6,9 +6,9 @@ from pygame.locals import *
 import numpy as np
 
 from neuralnet import *
-from src.helper import *
-from src.robot import Robot
-from src.wall import Wall
+from helper import *
+from robot import Robot
+from wall import Wall
 
 WIDTH = 840
 HEIGHT = 600
@@ -57,7 +57,8 @@ class GFX:
         self.visited_arr = []
 
         # Init pygame window
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT+stats_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+
         pygame.display.set_caption("ARS")
 
         # Init robot
