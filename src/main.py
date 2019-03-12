@@ -74,24 +74,24 @@ def main():
 	load_population_path = ''
 	# load_population_path = 'weights/0309_163600/gen49' # Continues with a previous generation as gen0
 
-	best_robot = g.genetics(n_generation=n_generations, population_size=population_size, n_selected=n_selected,
-							elitism=elitism, simulation_steps=simulation_steps, robot_rooms=robot_rooms,
-							draw=draw, mutation_rate=mutation_rate, load_population=load_population_path)
+	# best_robot = g.genetics(n_generation=n_generations, population_size=population_size, n_selected=n_selected,
+	# 						elitism=elitism, simulation_steps=simulation_steps, robot_rooms=robot_rooms,
+	# 						draw=draw, mutation_rate=mutation_rate, load_population=load_population_path)
 
 	# best_robot = g.get_best_individual('weights/0309_005310/gen17')
 	# best_robot = g.get_best_individual('weights/0309_005310/gen25')
 	# best_robot = g.get_best_individual('weights/0309_124629/gen44')
 
 	# best_robot = g.get_best_individual('weights_saved/0309_204413/gen49') # Empty room
-	# best_robot = g.get_best_individual('weights_saved/0309_212316/gen49') # Room3
+	best_robot = g.get_best_individual('weights/0309_204331/gen49') # Room3
 
 	# best_robot = Robot(g.WIDTH, g.HEIGHT, rooms.room_3)
 	gui = GFX()
 	# best_robot.set_walls(rooms.get_base_room())
 	# best_robot.set_walls(rooms.room_3)
-	best_robot.set_walls(rooms.room_3)
+	best_robot.set_walls(rooms.room_5)
 	best_robot.set_pos(300, 450, 0)
-	best_robot.set_pos(600, 300, 0)
+	# best_robot.set_pos(600, 300, 0)
 	# best_robot.set_pos(130, 150, 0)
 	# best_robot.set_pos(100, g.HEIGHT - 150, 145)
 	gui.set_robot(best_robot)
