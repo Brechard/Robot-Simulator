@@ -1,0 +1,5 @@
+50 generations
+30 individuals
+steps 5000
+only trained in small empty room.
+Final robot covers entire room => weights_saved/0309_204413/gen49

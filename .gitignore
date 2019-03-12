@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 .idea/
 src/weights.txt
+src/weights
+src/weights_saved
 
 # C extensions
 *.so

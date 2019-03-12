@@ -43,13 +43,10 @@ class RNN:
         hidden_layer = weights[: n_hidden_layer_nodes]
         output_layer = weights[n_hidden_layer_nodes:]
         self.weights = []
-        try:
-            self.weights.append(hidden_layer.reshape((self.inputs + self.recurrent_nodes, self.hidden_layer)))
-            self.weights.append(output_layer.reshape((self.hidden_layer, self.outputs)))
-            self.weights = np.array(self.weights)
-        except:
-            print("BROKEN")
-            assert 1 == 2
+        self.weights.append(hidden_layer.reshape((self.inputs + self.recurrent_nodes, self.hidden_layer)))
+        self.weights.append(output_layer.reshape((self.hidden_layer, self.outputs)))
+        self.weights = np.array(self.weights)
+
 
     def propagate(self, inputs):
         # Add previous output as recurrent input
@@ -57,10 +54,7 @@ class RNN:
 
         # Propagate
         for weight in self.weights:
-            try:
-                values = np.tanh(np.matmul(values, weight))
-            except:
-                print("BROKEN BENINGING")
+            values = np.tanh(np.matmul(values, weight))
 
         self.last_outputs = values
         return values
