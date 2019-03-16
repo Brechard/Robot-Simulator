@@ -6,9 +6,9 @@ from pygame.locals import *
 import numpy as np
 
 from neuralnet import *
-from helper import *
-from robot import Robot
-from wall import Wall
+from src.helper import *
+from src.robot import Robot
+from src.wall import Wall
 
 WIDTH = 840
 HEIGHT = 600
@@ -17,9 +17,10 @@ HEIGHT = 600
 
 # some colors
 black = (0, 0, 0)
-dust = (220, 225, 234)
+dust = (128, 128, 128)
 blue = (20, 80, 155)
 red = (255, 0, 0)
+green = (11, 102, 35)
 stats_height = 80
 pygame.font.init()
 font = pygame.font.SysFont('arial', 20)
@@ -42,6 +43,12 @@ class GFX:
             self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
             self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
             self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+        self.beacons = []
+        for wall in self.wall_list:
+            if wall.p1 not in self.beacons:
+                self.beacons.append(wall.p1)
+            if wall.p2 not in self.beacons:
+                self.beacons.append(wall.p2)
 
         # padding = 230
         # self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
@@ -57,12 +64,14 @@ class GFX:
         self.visited_arr = []
 
         # Init pygame window
-        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT + stats_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("ARS")
 
         # Init robot
         self.robot = Robot(WIDTH, HEIGHT, self.wall_list, weights)
+
+    def set_nn_controller(self):
+        self.robot.use_nn = True
 
     def load_image(self, filename, transparent=False):
         try:
@@ -143,12 +152,17 @@ class GFX:
         self.screen.fill([255, 255, 255])
 
         # Dust
-        for visit in self.visited_arr:
-            pygame.draw.circle(self.screen, dust, visit, self.robot.radius-5, 0)
+        if len(self.visited_arr) > 1:
+            for pos in range(1, len(self.visited_arr)):
+                pygame.draw.line(self.screen, dust, self.visited_arr[pos - 1], self.visited_arr[pos], 2)
 
         # Draw walls
         for wall in self.wall_list:
             pygame.draw.line(self.screen, black, wall.p1, wall.p2)
+
+        for beacon in self.robot.check_beacons(self.beacons):
+            pygame.draw.circle(self.screen, red, beacon, 10, 0)
+            pygame.draw.line(self.screen, green, (self.robot.x, self.robot.y), beacon, 2)
 
         # Sensors
         for i, sensor in enumerate(self.robot.sensors):

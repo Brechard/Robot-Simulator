@@ -1,6 +1,5 @@
 
-
-class Sensor():
+class Sensor:
 	MAX_SENSOR_VALUE = 100
 
 	def __init__(self, angle):
