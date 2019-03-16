@@ -57,11 +57,14 @@ class GFX:
         self.visited_arr = []
 
         # Init pygame window
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT+stats_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT + stats_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
         pygame.display.set_caption("ARS")
 
         # Init robot
         self.robot = Robot(WIDTH, HEIGHT, self.wall_list, weights)
+
+    def set_nn_controller(self):
+        self.robot.use_nn = True
 
     def load_image(self, filename, transparent=False):
         try:
@@ -143,7 +146,7 @@ class GFX:
 
         # Dust
         for visit in self.visited_arr:
-            pygame.draw.circle(self.screen, dust, visit, self.robot.radius-5, 0)
+            pygame.draw.circle(self.screen, dust, visit, self.robot.radius - 5, 0)
 
         # Draw walls
         for wall in self.wall_list:
