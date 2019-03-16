@@ -111,7 +111,8 @@ class GFX:
             if draw:
                 self.draw(i)
 
-    def event(self, events):
+    def eve
+        nt(self, events):
         if events.type == QUIT:
             sys.exit(0)
         elif events.type == KEYUP:
