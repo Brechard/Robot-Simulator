@@ -2,7 +2,6 @@ from src.helper import *
 from src.neuralnet import *
 from src.sensor import Sensor
 
-
 class Robot:
     def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False):
         self.x = 100
@@ -26,6 +25,8 @@ class Robot:
         self.prev_y = self.y
         self.prev_theta = self.theta
         self.use_nn = use_nn
+
+        self.range_beacon_sensor = 200
 
         # Fitness stats
         self.fitness = 0
@@ -70,6 +71,19 @@ class Robot:
                 break
 
         return collision
+
+    def check_beacons(self, beacons):
+        """
+        Iterate over all the beacons and checks if they are in the range of the beacon sensor
+        :return: list of beacons found by the robot
+        """
+        saw_beacons = []
+        for beacon in beacons:
+            if distance(beacon, [self.x, self.y]) < self.range_beacon_sensor:
+                saw_beacons.append(beacon)
+
+        return saw_beacons
+
 
     def get_sensor_values(self):
         list = []

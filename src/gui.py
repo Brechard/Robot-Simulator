@@ -20,6 +20,7 @@ black = (0, 0, 0)
 dust = (220, 225, 234)
 blue = (20, 80, 155)
 red = (255, 0, 0)
+green = (11, 102, 35)
 stats_height = 80
 pygame.font.init()
 font = pygame.font.SysFont('arial', 20)
@@ -42,6 +43,12 @@ class GFX:
             self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
             self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
             self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+        self.beacons = []
+        for wall in self.wall_list:
+            if wall.p1 not in self.beacons:
+                self.beacons.append(wall.p1)
+            if wall.p2 not in self.beacons:
+                self.beacons.append(wall.p2)
 
         # padding = 230
         # self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
@@ -151,6 +158,11 @@ class GFX:
         # Draw walls
         for wall in self.wall_list:
             pygame.draw.line(self.screen, black, wall.p1, wall.p2)
+
+        for beacon in self.robot.check_beacons(self.beacons):
+            pygame.draw.circle(self.screen, red, beacon, 10, 0)
+            pygame.draw.line(self.screen, green, (self.robot.x, self.robot.y), beacon, 2)
+
 
         # Sensors
         for i, sensor in enumerate(self.robot.sensors):
