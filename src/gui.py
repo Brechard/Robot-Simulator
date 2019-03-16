@@ -17,7 +17,7 @@ HEIGHT = 600
 
 # some colors
 black = (0, 0, 0)
-dust = (220, 225, 234)
+dust = (128, 128, 128)
 blue = (20, 80, 155)
 red = (255, 0, 0)
 green = (11, 102, 35)
@@ -152,8 +152,9 @@ class GFX:
         self.screen.fill([255, 255, 255])
 
         # Dust
-        for visit in self.visited_arr:
-            pygame.draw.circle(self.screen, dust, visit, self.robot.radius - 5, 0)
+        if len(self.visited_arr) > 1:
+            for pos in range(1, len(self.visited_arr)):
+                pygame.draw.line(self.screen, dust, self.visited_arr[pos - 1], self.visited_arr[pos], 2)
 
         # Draw walls
         for wall in self.wall_list:
@@ -162,7 +163,6 @@ class GFX:
         for beacon in self.robot.check_beacons(self.beacons):
             pygame.draw.circle(self.screen, red, beacon, 10, 0)
             pygame.draw.line(self.screen, green, (self.robot.x, self.robot.y), beacon, 2)
-
 
         # Sensors
         for i, sensor in enumerate(self.robot.sensors):
