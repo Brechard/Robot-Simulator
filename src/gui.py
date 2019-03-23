@@ -21,6 +21,7 @@ dust = (128, 128, 128)
 blue = (20, 80, 155)
 red = (255, 0, 0)
 green = (11, 102, 35)
+green_sensor = (53, 98, 68)
 stats_height = 80
 pygame.font.init()
 font = pygame.font.SysFont('arial', 20)
@@ -34,6 +35,8 @@ class GFX:
     robot_size = 60
 
     def __init__(self, weights=None, wall_list=None):
+        self.beacons = []
+
         # Outer walls
         self.padding = 20
         if wall_list:
@@ -64,7 +67,6 @@ class GFX:
         self.robot = Robot(WIDTH, HEIGHT, self.wall_list, weights)
 
     def add_beacons(self, n_random_beacons=5):
-        self.beacons = []
 
         # Beacons on the walls
         for wall in self.wall_list:
@@ -159,9 +161,9 @@ class GFX:
                 self.robot.kinematical_parameters[0] -= button_step  # Both decrement
                 self.robot.kinematical_parameters[1] -= button_step  # Both decrement
             elif events.key == K_a:
-                self.robot.kinematical_parameters[1] -= button_step / 2.5  # Decrement angular velocity
+                self.robot.kinematical_parameters[1] -= button_step / 100  # Decrement angular velocity
             elif events.key == K_d:
-                self.robot.kinematical_parameters[1] += button_step / 2.5  # Increment angular velocity
+                self.robot.kinematical_parameters[1] += button_step / 100  # Increment angular velocity
 
     def update(self):
         """
@@ -196,6 +198,9 @@ class GFX:
             pygame.draw.circle(self.screen, red, beacon, 10, 0)
             pygame.draw.line(self.screen, green, (self.robot.x, self.robot.y), beacon, 2)
 
+        # Draw circle for the omnidirectional beacon sensor
+        pygame.draw.circle(self.screen, green_sensor, self.robot.get_pos(), self.robot.range_beacon_sensor, 1)
+
         # Sensors
         for i, sensor in enumerate(self.robot.sensors):
             pygame.draw.line(self.screen, red, self.robot.get_pos(), sensor.p2)
@@ -224,7 +229,7 @@ class GFX:
             red)  # Left
         self.screen.blit(text_surface, (30, stats_height + HEIGHT - 80))
         text_surface = font.render(
-            self.robot.kinematical_parameter_names[1] + " {0:.2f}".format(self.robot.kinematical_parameters[1]), False,
+            self.robot.kinematical_parameter_names[1] + " {0:.4f}".format(self.robot.kinematical_parameters[1]), False,
             red)  # Right
         self.screen.blit(text_surface, (30, stats_height + HEIGHT - 60))
         text_surface = font.render("updates: " + str(update), False, red)
@@ -233,22 +238,22 @@ class GFX:
     def draw_positions(self):
         # Positions
         text_surface = font.render("angle: {0:.2f}".format(math.degrees(self.robot.theta)), False, red)  # Angle
-        self.screen.blit(text_surface, (200, stats_height + HEIGHT - 80))
+        self.screen.blit(text_surface, (300, stats_height + HEIGHT - 80))
         text_surface = font.render("position y: " + str(int(self.robot.y)), False, red)
-        self.screen.blit(text_surface, (200, stats_height + HEIGHT - 60))
+        self.screen.blit(text_surface, (300, stats_height + HEIGHT - 60))
         text_surface = font.render("position x: " + str(int(self.robot.x)), False, red)
-        self.screen.blit(text_surface, (200, stats_height + HEIGHT - 40))
+        self.screen.blit(text_surface, (300, stats_height + HEIGHT - 40))
 
     def draw_performance(self):
         # Draw performance
         text_surface = font.render("not_moved: " + str(self.robot.n_not_moved), False, red)
-        self.screen.blit(text_surface, (340, stats_height + HEIGHT - 80))
+        self.screen.blit(text_surface, (440, stats_height + HEIGHT - 80))
         text_surface = font.render("collisions: " + str(self.robot.n_collisions), False, red)
-        self.screen.blit(text_surface, (340, stats_height + HEIGHT - 60))
+        self.screen.blit(text_surface, (440, stats_height + HEIGHT - 60))
         text_surface = font.render("cleaned_dust: " + str(self.robot.n_visited_bins), False, red)
-        self.screen.blit(text_surface, (340, stats_height + HEIGHT - 40))
+        self.screen.blit(text_surface, (440, stats_height + HEIGHT - 40))
         text_surface = font.render("fitness: " + str(self.robot.fitness), False, red)
-        self.screen.blit(text_surface, (500, stats_height + HEIGHT - 80))
+        self.screen.blit(text_surface, (600, stats_height + HEIGHT - 80))
 
     def get_nn_weights(self):
         return self.robot.nn.flatten()
