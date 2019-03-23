@@ -2,14 +2,22 @@ from src.helper import *
 from src.neuralnet import *
 from src.sensor import Sensor
 
+
 class Robot:
-    def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False):
+    def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False, is_odometry_based=False):
         self.x = 100
         self.y = 150
         self.theta = 0
         self.radius = 30
         self.wheel_dist = self.radius * 2  # Distance between wheels
-        self.speed = [0, 0]  # left - [0], right - [1]
+        self.is_odometry_based = is_odometry_based
+        self.kinematical_parameters = [0, 0]  # left - [0], right - [1]
+
+        if is_odometry_based:
+            self.kinematical_parameter_names = ['left wheel', 'right wheel']
+        else:
+            self.kinematical_parameter_names = ['translational velocity', 'angular velocity']
+
         self.check_if_rotates()
         self.width = WIDTH
         self.height = HEIGHT
@@ -84,7 +92,6 @@ class Robot:
 
         return saw_beacons
 
-
     def get_sensor_values(self):
         list = []
         for sensor in self.sensors:
@@ -96,21 +103,22 @@ class Robot:
         Calculate the speed of the robot basing on the wheel speed
         :return: Velocity of the robot
         """
-        return (self.speed[1] + self.speed[0]) / 2
+        return (self.kinematical_parameters[1] + self.kinematical_parameters[0]) / 2
 
     def calculate_R(self):
         """
         Calculate distance from midpoint to ICC basing on the wheel speed and width
         :return:
         """
-        return (self.wheel_dist / 2) * (self.speed[0] + self.speed[1]) / (self.speed[1] - self.speed[0])
+        return (self.wheel_dist / 2) * (self.kinematical_parameters[0] + self.kinematical_parameters[1]) / (
+                    self.kinematical_parameters[1] - self.kinematical_parameters[0])
 
     def calculate_rate_of_rotation(self):
         """
         Calculate rate of rotation basing on speed of the wheels
         :return:
         """
-        return (self.speed[1] - self.speed[0]) / self.wheel_dist
+        return (self.kinematical_parameters[1] - self.kinematical_parameters[0]) / self.wheel_dist
 
     def get_ICC_coordinates(self):
         """
@@ -126,12 +134,31 @@ class Robot:
         Checks if the velocities of the wheels are equal and returns corresponding True/False value
         :return:
         """
-        if math.isclose(self.speed[0], self.speed[1]):
+        if math.isclose(self.kinematical_parameters[0], self.kinematical_parameters[1]):
             self.is_rotating = False
         else:
             self.is_rotating = True
 
     def update_position(self):
+        if self.is_odometry_based:
+            self.update_position_odometry_based()
+        else:
+            self.update_position_velocity_based()
+
+    def update_position_velocity_based(self):
+        """
+        Update position and angle of the robot basing on velocity model.
+        """
+        increment_matrix = np.array([[math.cos(self.theta), 0],
+                                     [math.sin(self.theta), 0],
+                                     [0, 1]])
+
+        [self.x, self.y, self.theta] = [self.x, self.y, self.theta] + np.dot(increment_matrix,
+                                                                             self.kinematical_parameters)
+        self.check_periodicity()
+        self.update_fitness()
+
+    def update_position_odometry_based(self):
         """
         Updating position and angle of the robot. Firstly check if the rotation is present, then
         apply corresponding formula.
@@ -149,7 +176,7 @@ class Robot:
         # Propagate ANN
         if self.use_nn:
             outputs = self.nn.propagate(sensor_values) * 5
-            self.speed = outputs
+            self.kinematical_parameters = outputs
 
         # Update position
         self.check_if_rotates()
@@ -169,17 +196,19 @@ class Robot:
             self.y = result[1]
             self.theta -= result[2]
             # print(R)
-            # Reset degrees after 2 PI radians
-            if self.theta >= 2 * math.pi:
-                self.theta = self.theta - 2 * math.pi
-            elif self.theta <= -2 * math.pi:
-                self.theta = self.theta + 2 * math.pi
+            self.check_periodicity()
         else:
-            self.x += self.speed[0] * math.cos(self.theta)
-            self.y += self.speed[0] * math.sin(self.theta)
+            self.x += self.kinematical_parameters[0] * math.cos(self.theta)
+            self.y += self.kinematical_parameters[0] * math.sin(self.theta)
 
         self.update_fitness()
-        return self.visited_arr
+
+    def check_periodicity(self):
+        # Reset degrees after 2 PI radians
+        if self.theta >= 2 * math.pi:
+            self.theta = self.theta - 2 * math.pi
+        elif self.theta <= -2 * math.pi:
+            self.theta = self.theta + 2 * math.pi
 
     def set_NN(self, NN):
         self.nn = NN

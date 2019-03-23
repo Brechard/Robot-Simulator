@@ -95,6 +95,9 @@ class GFX:
     def set_nn_controller(self):
         self.robot.use_nn = True
 
+    def set_odometry_based_model(self):
+        self.robot.is_odometry_based = True
+
     def load_image(self, filename, transparent=False):
         try:
             image = pygame.image.load(filename).convert()
@@ -138,21 +141,27 @@ class GFX:
             sys.exit(0)
         elif events.type == KEYUP:
             if events.key == K_w:
-                self.robot.speed[0] += button_step  # Left wheel increment
+                self.robot.kinematical_parameters[
+                    0] += button_step  # Left wheel increment / Increment translational velocity
             elif events.key == K_s:
-                self.robot.speed[0] -= button_step  # Left wheel decrement
+                self.robot.kinematical_parameters[
+                    0] -= button_step  # Left wheel decrement / Decrement translational velocity
             elif events.key == K_o:
-                self.robot.speed[1] += button_step  # Right wheel increment
+                self.robot.kinematical_parameters[1] += button_step  # Right wheel increment
             elif events.key == K_l:
-                self.robot.speed[1] -= button_step  # Right wheel decrement
+                self.robot.kinematical_parameters[1] -= button_step  # Right wheel decrement
             elif events.key == K_x:
-                self.robot.speed = [0, 0]  # Set to 0
+                self.robot.kinematical_parameters = [0, 0]  # Set to 0
             elif events.key == K_t:
-                self.robot.speed[0] += button_step  # Both increment
-                self.robot.speed[1] += button_step  # Both increment
+                self.robot.kinematical_parameters[0] += button_step  # Both increment
+                self.robot.kinematical_parameters[1] += button_step  # Both increment
             elif events.key == K_g:
-                self.robot.speed[0] -= button_step  # Both decrement
-                self.robot.speed[1] -= button_step  # Both decrement
+                self.robot.kinematical_parameters[0] -= button_step  # Both decrement
+                self.robot.kinematical_parameters[1] -= button_step  # Both decrement
+            elif events.key == K_a:
+                self.robot.kinematical_parameters[1] -= button_step / 2.5  # Decrement angular velocity
+            elif events.key == K_d:
+                self.robot.kinematical_parameters[1] += button_step / 2.5  # Increment angular velocity
 
     def update(self):
         """
@@ -166,7 +175,8 @@ class GFX:
         time_diff = time_diff.total_seconds()
         self.last_time = now
 
-        self.visited_arr = self.robot.update_position()
+        self.robot.update_position()
+        self.visited_arr = self.robot.visited_arr
 
     def draw(self, update):
 
@@ -198,14 +208,30 @@ class GFX:
         pygame.draw.line(self.screen, black, (self.robot.x, self.robot.y),
                          point_from_angle(self.robot.x, self.robot.y, self.robot.theta, self.robot.radius), 2)
 
+        self.draw_kinematics(update)
+
+        self.draw_positions()
+
+        self.draw_performance()
+
+        pygame.display.update()
+
+    def draw_kinematics(self, update):
+
         # Wheel speeds
-        text_surface = font.render("left wheel: {0:.2f}".format(self.robot.speed[0]), False, red)  # Left
+        text_surface = font.render(
+            self.robot.kinematical_parameter_names[0] + " {0:.2f}".format(self.robot.kinematical_parameters[0]), False,
+            red)  # Left
         self.screen.blit(text_surface, (30, stats_height + HEIGHT - 80))
-        text_surface = font.render("right wheel: {0:.2f}".format(self.robot.speed[1]), False, red)  # Right
+        text_surface = font.render(
+            self.robot.kinematical_parameter_names[1] + " {0:.2f}".format(self.robot.kinematical_parameters[1]), False,
+            red)  # Right
         self.screen.blit(text_surface, (30, stats_height + HEIGHT - 60))
         text_surface = font.render("updates: " + str(update), False, red)
         self.screen.blit(text_surface, (30, stats_height + HEIGHT - 40))
 
+    def draw_positions(self):
+        # Positions
         text_surface = font.render("angle: {0:.2f}".format(math.degrees(self.robot.theta)), False, red)  # Angle
         self.screen.blit(text_surface, (200, stats_height + HEIGHT - 80))
         text_surface = font.render("position y: " + str(int(self.robot.y)), False, red)
@@ -213,17 +239,16 @@ class GFX:
         text_surface = font.render("position x: " + str(int(self.robot.x)), False, red)
         self.screen.blit(text_surface, (200, stats_height + HEIGHT - 40))
 
+    def draw_performance(self):
+        # Draw performance
         text_surface = font.render("not_moved: " + str(self.robot.n_not_moved), False, red)
         self.screen.blit(text_surface, (340, stats_height + HEIGHT - 80))
         text_surface = font.render("collisions: " + str(self.robot.n_collisions), False, red)
         self.screen.blit(text_surface, (340, stats_height + HEIGHT - 60))
         text_surface = font.render("cleaned_dust: " + str(self.robot.n_visited_bins), False, red)
         self.screen.blit(text_surface, (340, stats_height + HEIGHT - 40))
-
         text_surface = font.render("fitness: " + str(self.robot.fitness), False, red)
         self.screen.blit(text_surface, (500, stats_height + HEIGHT - 80))
-
-        pygame.display.update()
 
     def get_nn_weights(self):
         return self.robot.nn.flatten()
