@@ -193,6 +193,7 @@ class Robot:
     def update_fitness(self):
         collided = self.check_sensors()
         x, y = int(round(self.x)), int(round(self.y))
+        position = [x, y]
 
         x_bin_idx = np.digitize(x, self.horizontal_bins)
         y_bin_idx = np.digitize(y, self.vertical_bins)
@@ -200,8 +201,10 @@ class Robot:
         # Increase fitness calculated when new space visited
         if self.visited[x_bin_idx, y_bin_idx] == 0:
             self.visited[x_bin_idx, y_bin_idx] = 1
-            self.visited_arr.append([x, y])
             self.n_visited_bins += 1
+
+        if position not in self.visited_arr:
+            self.visited_arr.append([x, y])
 
         # Decrease fitness if wall collided
         if collided:

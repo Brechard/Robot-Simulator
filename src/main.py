@@ -63,7 +63,8 @@ def main():
     n_selected = 20
     elitism = 0.05
     simulation_steps = 5000
-    draw = True
+    draw = False
+
     mutation_rate = 0.02
     # robot_rooms = [rooms.room_1, rooms.room_2, rooms.room_3]
     # robot_rooms = [rooms.get_base_room(), rooms.room_2, rooms.room_3]

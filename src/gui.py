@@ -53,7 +53,11 @@ class GFX:
         self.visited_arr = []
 
         # Init pygame window
-        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((WIDTH, HEIGHT + stats_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
+
+        # init pygame window for mac users
+        # self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+
         pygame.display.set_caption("ARS")
 
         # Init robot
