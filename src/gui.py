@@ -43,12 +43,8 @@ class GFX:
             self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
             self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
             self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
-        self.beacons = []
-        for wall in self.wall_list:
-            if wall.p1 not in self.beacons:
-                self.beacons.append(wall.p1)
-            if wall.p2 not in self.beacons:
-                self.beacons.append(wall.p2)
+
+        self.add_beacons()
 
         # padding = 230
         # self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
@@ -64,11 +60,28 @@ class GFX:
         self.visited_arr = []
 
         # Init pygame window
-        self.screen = pygame.display.set_mode((WIDTH, HEIGHT + stats_height), pygame.HWSURFACE | pygame.DOUBLEBUF)
+        self.screen = pygame.display.set_mode((0, 0),  pygame.FULLSCREEN)
         pygame.display.set_caption("ARS")
 
         # Init robot
         self.robot = Robot(WIDTH, HEIGHT, self.wall_list, weights)
+
+    def add_beacons(self, n_random_beacons=5):
+        self.beacons = []
+
+        # Beacons on the walls
+        for wall in self.wall_list:
+            if wall.p1 not in self.beacons:
+                self.beacons.append(wall.p1)
+            if wall.p2 not in self.beacons:
+                self.beacons.append(wall.p2)
+
+        # Random beacons
+        for i in range(n_random_beacons):
+            x, y = (np.random.randint(0, WIDTH), np.random.randint(0, HEIGHT))
+            self.beacons.append((x,y))
+
+
 
     def set_nn_controller(self):
         self.robot.use_nn = True
@@ -111,8 +124,7 @@ class GFX:
             if draw:
                 self.draw(i)
 
-    def eve
-        nt(self, events):
+    def event(self, events):
         if events.type == QUIT:
             sys.exit(0)
         elif events.type == KEYUP:
