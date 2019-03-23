@@ -98,7 +98,7 @@ class GFX:
         self.robot.use_nn = True
 
     def set_odometry_based_model(self):
-        self.robot.is_odometry_based = True
+        self.robot.set_odometry_based_model()
 
     def load_image(self, filename, transparent=False):
         try:
@@ -225,7 +225,7 @@ class GFX:
 
         # Wheel speeds
         text_surface = font.render(
-            self.robot.kinematical_parameter_names[0] + " {0:.2f}".format(self.robot.kinematical_parameters[0]), False,
+            self.robot.kinematical_parameter_names[0] + " {0:.4f}".format(self.robot.kinematical_parameters[0]), False,
             red)  # Left
         self.screen.blit(text_surface, (30, stats_height + HEIGHT - 80))
         text_surface = font.render(

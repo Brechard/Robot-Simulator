@@ -49,6 +49,10 @@ class Robot:
         for i in range(num_sensors):
             self.sensors.append(Sensor(i * (2 * math.pi / num_sensors)))
 
+    def set_odometry_based_model(self):
+        self.is_odometry_based = True
+        self.kinematical_parameter_names = ['left wheel', 'right wheel']
+
     def set_pos(self, x, y, theta):
         self.x = x
         self.y = y
@@ -111,7 +115,7 @@ class Robot:
         :return:
         """
         return (self.wheel_dist / 2) * (self.kinematical_parameters[0] + self.kinematical_parameters[1]) / (
-                    self.kinematical_parameters[1] - self.kinematical_parameters[0])
+                self.kinematical_parameters[1] - self.kinematical_parameters[0])
 
     def calculate_rate_of_rotation(self):
         """
@@ -155,8 +159,26 @@ class Robot:
 
         [self.x, self.y, self.theta] = [self.x, self.y, self.theta] + np.dot(increment_matrix,
                                                                              self.kinematical_parameters)
+        self.introduce_noise_kinematics()
         self.check_periodicity()
         self.update_fitness()
+
+    def introduce_noise_kinematics(self):
+        if np.random.random() < 0.01:
+            if self.is_odometry_based \
+                    and (abs(self.kinematical_parameters[0]) > 0.01
+                         or abs(self.kinematical_parameters[1]) > 0.01):
+                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.01
+            elif not self.is_odometry_based:
+                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.001
+
+        if np.random.random() < 0.01:
+            if self.is_odometry_based \
+                    and (abs(self.kinematical_parameters[0]) > 0.01
+                         or abs(self.kinematical_parameters[1]) > 0.01):
+                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.01
+            elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
+                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.0001
 
     def update_position_odometry_based(self):
         """
@@ -178,6 +200,7 @@ class Robot:
             outputs = self.nn.propagate(sensor_values) * 5
             self.kinematical_parameters = outputs
 
+        self.introduce_noise_kinematics()
         # Update position
         self.check_if_rotates()
         if self.is_rotating:
