@@ -35,32 +35,25 @@ class GFX:
 
     def __init__(self, weights=None, wall_list=None):
         # Outer walls
-        padding = 20
+        self.padding = 20
         if wall_list:
             self.wall_list = wall_list
         else:
-            self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
-            self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-            self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
-            self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
+            self.wall_list.append(Wall((self.padding, self.padding), (WIDTH - self.padding, self.padding)))
+            self.wall_list.append(
+                Wall((self.padding, HEIGHT - self.padding), (WIDTH - self.padding, HEIGHT - self.padding)))
+            self.wall_list.append(Wall((self.padding, self.padding), (self.padding, HEIGHT - self.padding)))
+            self.wall_list.append(
+                Wall((WIDTH - self.padding, self.padding), (WIDTH - self.padding, HEIGHT - self.padding)))
 
+        # self.build_walls()
         self.add_beacons()
-
-        # padding = 230
-        # self.wall_list.append(Wall((padding, padding), (WIDTH - padding, padding)))
-        # self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-        # self.wall_list.append(Wall((padding, padding), (padding, HEIGHT - padding)))
-        # self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
-        # self.wall_list.append(Wall((padding * 2, padding), (WIDTH - padding, padding)))
-        # self.wall_list.append(Wall((padding, HEIGHT - padding), (WIDTH - padding, HEIGHT - padding)))
-        # self.wall_list.append(Wall((padding * 2, padding), (padding, HEIGHT - padding)))
-        # self.wall_list.append(Wall((WIDTH - padding, padding), (WIDTH - padding, HEIGHT - padding)))
 
         self.visited = np.zeros((WIDTH, HEIGHT))
         self.visited_arr = []
 
         # Init pygame window
-        self.screen = pygame.display.set_mode((0, 0),  pygame.FULLSCREEN)
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         pygame.display.set_caption("ARS")
 
         # Init robot
@@ -78,10 +71,22 @@ class GFX:
 
         # Random beacons
         for i in range(n_random_beacons):
-            x, y = (np.random.randint(0, WIDTH), np.random.randint(0, HEIGHT))
-            self.beacons.append((x,y))
+            x, y = (np.random.randint(self.padding, WIDTH - self.padding),
+                    np.random.randint(self.padding, HEIGHT - self.padding))
+            self.beacons.append((x, y))
 
-
+    def build_walls(self):
+        self.padding = 230
+        self.wall_list.append(Wall((self.padding, self.padding), (WIDTH - self.padding, self.padding)))
+        self.wall_list.append(
+            Wall((self.padding, HEIGHT - self.padding), (WIDTH - self.padding, HEIGHT - self.padding)))
+        self.wall_list.append(Wall((self.padding, self.padding), (self.padding, HEIGHT - self.padding)))
+        self.wall_list.append(Wall((WIDTH - self.padding, self.padding), (WIDTH - self.padding, HEIGHT - self.padding)))
+        self.wall_list.append(Wall((self.padding * 2, self.padding), (WIDTH - self.padding, self.padding)))
+        self.wall_list.append(
+            Wall((self.padding, HEIGHT - self.padding), (WIDTH - self.padding, HEIGHT - self.padding)))
+        self.wall_list.append(Wall((self.padding * 2, self.padding), (self.padding, HEIGHT - self.padding)))
+        self.wall_list.append(Wall((WIDTH - self.padding, self.padding), (WIDTH - self.padding, HEIGHT - self.padding)))
 
     def set_nn_controller(self):
         self.robot.use_nn = True
