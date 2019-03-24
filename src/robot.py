@@ -2,7 +2,6 @@ from src.helper import *
 from src.neuralnet import *
 from src.sensor import Sensor
 
-
 class Robot:
     def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False, is_odometry_based=False):
         self.x = 100
@@ -159,26 +158,11 @@ class Robot:
 
         [self.x, self.y, self.theta] = [self.x, self.y, self.theta] + np.dot(increment_matrix,
                                                                              self.kinematical_parameters)
-        self.introduce_noise_kinematics()
+
+        self.add_noise_kinematics()
         self.check_periodicity()
         self.update_fitness()
 
-    def introduce_noise_kinematics(self):
-        if np.random.random() < 0.01:
-            if self.is_odometry_based \
-                    and (abs(self.kinematical_parameters[0]) > 0.01
-                         or abs(self.kinematical_parameters[1]) > 0.01):
-                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.01
-            elif not self.is_odometry_based:
-                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.001
-
-        if np.random.random() < 0.01:
-            if self.is_odometry_based \
-                    and (abs(self.kinematical_parameters[0]) > 0.01
-                         or abs(self.kinematical_parameters[1]) > 0.01):
-                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.01
-            elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
-                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.0001
 
     def update_position_odometry_based(self):
         """
@@ -200,7 +184,7 @@ class Robot:
             outputs = self.nn.propagate(sensor_values) * 5
             self.kinematical_parameters = outputs
 
-        self.introduce_noise_kinematics()
+        self.add_noise_kinematics()
         # Update position
         self.check_if_rotates()
         if self.is_rotating:
@@ -295,3 +279,21 @@ class Robot:
 
     def set_walls(self, walls):
         self.walls = walls
+
+    def add_noise_kinematics(self):
+        if np.random.random() < 0.01:
+            if self.is_odometry_based \
+                    and (abs(self.kinematical_parameters[0]) > 0.01
+                         or abs(self.kinematical_parameters[1]) > 0.01):
+                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.01
+            elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
+                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.001
+
+        if np.random.random() < 0.01:
+            if self.is_odometry_based \
+                    and (abs(self.kinematical_parameters[0]) > 0.01
+                         or abs(self.kinematical_parameters[1]) > 0.01):
+                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.01
+            elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
+                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.0001
+    

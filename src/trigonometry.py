@@ -1,69 +1,38 @@
-import numpy as np
-import math
+from scipy.optimize import minimize
 import matplotlib.pyplot as plt
-
-COT_MAX = 100000000
-
-test_beacon_position = ((0, 0), (10, 0), (0, 10))
-angles = (math.pi, math.pi/2,  3*math.pi/2)
+import numpy as np
 
 
-def check_boundaries(max_value, *args):
-    result = []
-    for value in args:
-        if value > max_value:
-            value = max_value
-        elif value < - max_value:
-            value = -max_value
+def calculate_position_helper(distances, beacons):
+    def error(x, c, r):
+        return sum([(np.linalg.norm(x - c[i]) - r[i]) ** 2 for i in range(len(c))])
+    beacons = np.array(beacons)
 
-        result.append(value)
-    return result
-
-def calculate_position(angles, positions):
-    
-    cot_12 = 1 / math.tan(angles[1] - angles[0])
-    cot_23 = 1 / math.tan(angles[2] - angles[1])
-    cot_31 = (1.0 - cot_12 * cot_23) / (cot_12 + cot_23)
-
-    cot_12, cot_23, cot_31 = check_boundaries(COT_MAX, cot_12, cot_23, cot_31)
-
-    x1_ = positions[0][0] - positions[1][0]
-    y1_ = positions[0][1] - positions[1][1]
-    x3_ = positions[2][0] - positions[1][0]
-    y3_ = positions[2][1] - positions[1][1]
-
-    c12x = x1_ + cot_12 * y1_
-    c12y = y1_ - cot_12 * x1_
-
-    c23x = x3_ - cot_23 * y3_
-    c23y = y3_ + cot_23 * x3_
-
-    c31x = (x3_ + x1_) + cot_31 * (y3_ - y1_)
-    c31y = (y3_ + y1_) - cot_31 * (x3_ - x1_)
-
-    k31 = (x3_ * x1_) + (y3_ * y1_) + cot_31 * ((y3_ * x1_) - (x3_ * y1_))
-
-    D = (c12x - c23x) * (c23y - c31y) - (c23x - c31x) * (c12y - c23y)
-    invD = 1.0 / D
-
-    K = k31 * invD
-
-    X = K * (c12y - c23y) + positions[1][0]
-    Y = K * (c23x - c12x) + positions[1][1]
-
-    Q = abs(invD)
-
-    return X, Y
-
-print(calculate_position(angles, test_beacon_position))
-x = []
-y = []
-for point in test_beacon_position:
-    x.append(point[0])
-    y.append(point[1])
-plt.scatter(x, y)
-x, y = calculate_position(angles, test_beacon_position)
-plt.scatter(x, y)
-plt.show()
+    l = len(beacons)
+    s = sum(distances)
+    # compute weight vector for initial guess
+    w = [((l - 1) * s) / (s - w) for w in distances]
+    # get initial guess of point location
+    x0 = sum([w[i] * beacons[i] for i in range(l)])
+    # optimize distance from signal origin to border of spheres
+    return minimize(error, x0, args=(beacons, distances), method='Nelder-Mead').x
 
 
+def calculate_position(angles, beacons):
+    if len(beacons) < 3:
+        return None
+
+    return calculate_position_helper(angles, beacons)
+
+
+def plot_and_calculate_position(angles, beacons):
+    x = []
+    y = []
+    for point in beacons:
+        x.append(point[0])
+        y.append(point[1])
+
+    plt.scatter(x, y)
+    x, y = calculate_position(angles, beacons)
+    plt.scatter(x, y)
+    plt.show()
