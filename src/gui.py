@@ -35,7 +35,6 @@ class GFX:
     robot_size = 60
 
     def __init__(self, weights=None, wall_list=None):
-        self.beacons = []
 
         # Outer walls
         self.padding = 20
@@ -50,7 +49,6 @@ class GFX:
                 Wall((WIDTH - self.padding, self.padding), (WIDTH - self.padding, HEIGHT - self.padding)))
 
         # self.build_walls()
-        self.add_beacons()
 
         self.visited = np.zeros((WIDTH, HEIGHT))
         self.visited_arr = []
@@ -65,21 +63,24 @@ class GFX:
 
         # Init robot
         self.robot = Robot(WIDTH, HEIGHT, self.wall_list, weights)
+        self.add_beacons()
 
-    def add_beacons(self, n_random_beacons=5):
-
+    def add_beacons(self, n_random_beacons=10):
+        beacons = []
         # Beacons on the walls
         for wall in self.wall_list:
-            if wall.p1 not in self.beacons:
-                self.beacons.append(wall.p1)
-            if wall.p2 not in self.beacons:
-                self.beacons.append(wall.p2)
+            if wall.p1 not in beacons:
+                beacons.append(wall.p1)
+            if wall.p2 not in beacons:
+                beacons.append(wall.p2)
 
         # Random beacons
         for i in range(n_random_beacons):
             x, y = (np.random.randint(self.padding, WIDTH - self.padding),
                     np.random.randint(self.padding, HEIGHT - self.padding))
-            self.beacons.append((x, y))
+            beacons.append((x, y))
+
+        self.robot.beacons = beacons
 
     def build_walls(self):
         self.padding = 230
@@ -188,15 +189,21 @@ class GFX:
         # Dust
         if len(self.visited_arr) > 1:
             for pos in range(1, len(self.visited_arr)):
-                pygame.draw.line(self.screen, dust, self.visited_arr[pos - 1], self.visited_arr[pos], 2)
+                pygame.draw.line(self.screen, black, self.visited_arr[pos - 1], self.visited_arr[pos], 2)
+
+        if len(self.robot.believe_states) > 1:
+            for pos in range(1, len(self.robot.believe_states)):
+                pygame.draw.line(self.screen, dust, self.robot.believe_states[pos - 1][:2],
+                                 self.robot.believe_states[pos][:2], 2)
 
         # Draw walls
         for wall in self.wall_list:
             pygame.draw.line(self.screen, black, wall.p1, wall.p2)
 
-        for beacon in self.robot.check_beacons(self.beacons):
-            pygame.draw.circle(self.screen, red, beacon, 10, 0)
-            pygame.draw.line(self.screen, green, (self.robot.x, self.robot.y), beacon, 2)
+        beacons, _ = self.robot.check_beacons()
+        for beacon in beacons:
+            pygame.draw.circle(self.screen, red, beacon[:2], 10, 0)
+            pygame.draw.line(self.screen, green, (self.robot.x, self.robot.y), beacon[:2], 2)
 
         # Draw circle for the omnidirectional beacon sensor
         pygame.draw.circle(self.screen, green_sensor, self.robot.get_pos(), self.robot.range_beacon_sensor, 1)

@@ -1,17 +1,21 @@
 from src.helper import *
 from src.neuralnet import *
 from src.sensor import Sensor
+import trigonometry
+import kalman_filter
+
 
 class Robot:
     def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False, is_odometry_based=False):
         self.x = 100
         self.y = 150
         self.theta = 0
+        self.believe_states = [[self.x, self.y, self.theta]]
         self.radius = 30
         self.wheel_dist = self.radius * 2  # Distance between wheels
         self.is_odometry_based = is_odometry_based
         self.kinematical_parameters = [0, 0]  # left - [0], right - [1]
-
+        self.beacons = []
         if is_odometry_based:
             self.kinematical_parameter_names = ['left wheel', 'right wheel']
         else:
@@ -83,17 +87,20 @@ class Robot:
 
         return collision
 
-    def check_beacons(self, beacons):
+    def check_beacons(self):
         """
         Iterate over all the beacons and checks if they are in the range of the beacon sensor
         :return: list of beacons found by the robot
         """
-        saw_beacons = []
-        for beacon in beacons:
-            if distance(beacon, [self.x, self.y]) < self.range_beacon_sensor:
-                saw_beacons.append(beacon)
+        detected_beacons = []
+        distances = []
+        for beacon in self.beacons:
+            d = distance(beacon, [self.x, self.y])
+            if d < self.range_beacon_sensor:
+                detected_beacons.append(beacon)
+                distances.append(d)
 
-        return saw_beacons
+        return detected_beacons, distances
 
     def get_sensor_values(self):
         list = []
@@ -162,6 +169,23 @@ class Robot:
         self.add_noise_kinematics()
         self.check_periodicity()
         self.update_fitness()
+        beacons, distances = self.check_beacons()
+        self.add_noise_beacons_distance(distances)
+        believe_state = trigonometry.calculate_position(distances, beacons)
+
+        if len(believe_state) == 0:
+            believe_state = [self.believe_states[-1][0],
+                             self.believe_states[-1][1],
+                             self.believe_states[-1][2]] \
+                            + np.dot(increment_matrix, self.kinematical_parameters)
+        else:
+            theta = self.theta
+            believe_state = [believe_state[0], believe_state[1], theta]
+            # kalman_filter.kalman_filter(believe_state, )
+
+        self.believe_states.append(believe_state)
+        a = []
+
 
 
     def update_position_odometry_based(self):
@@ -296,4 +320,12 @@ class Robot:
                 self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.01
             elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
                 self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.0001
-    
+
+    def add_noise_beacons_distance(self, beacons_distances):
+        """
+        Add noise to the beacons information
+        :param beacons_distances:
+        """
+
+        for pos, d in enumerate(beacons_distances):
+            beacons_distances[pos] += d * np.random.normal() * 0.1

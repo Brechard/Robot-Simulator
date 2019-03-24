@@ -16,3 +16,4 @@ def distance(point_1, point_2):
 def get_line_angle(point_1, point_2):
     """Returns the angle of a line that goes from point_1 to point_2"""
     return ((math.atan2((point_1[1]-point_2[1]), (point_1[0]-point_2[0])) * 180.0/math.pi) + 360) % 360
+

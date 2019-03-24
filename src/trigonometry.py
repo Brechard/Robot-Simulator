@@ -18,11 +18,11 @@ def calculate_position_helper(distances, beacons):
     return minimize(error, x0, args=(beacons, distances), method='Nelder-Mead').x
 
 
-def calculate_position(angles, beacons):
+def calculate_position(distances, beacons):
     if len(beacons) < 3:
-        return None
+        return []
 
-    return calculate_position_helper(angles, beacons)
+    return calculate_position_helper(distances, beacons)
 
 
 def plot_and_calculate_position(angles, beacons):
