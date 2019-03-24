@@ -3,9 +3,9 @@ import numpy as np
 
 def kalman_filter(state, covariance, control, observation):
     """
-    :param state:
-    :param covariance:
-    :param control:
+    :param state: Previous believe state
+    :param covariance: Covariance matrix
+    :param control: kinematics values
     :param observation:
     :return:
     """
@@ -24,8 +24,11 @@ def kalman_filter(state, covariance, control, observation):
     covariance = np.matmul(np.matmul(A, covariance), A.T) + R  # sum_t
 
     # Correction
-    K_t = covariance * C.T * np.linalg.inv(np.matmul(np.matmul(C * covariance), C.T) + Q_t.T)  # Kalman gain
-    new_state = state + np.matmul(K_t, (observation - np.matmul(C, state)))
+    K_t = covariance * C.T * np.linalg.inv(np.matmul(np.matmul(C, covariance), C.T) + Q_t.T)  # Kalman gain
+    try:
+        new_state = state + np.matmul(K_t, (observation - np.matmul(C, state)))
+    except:
+        print("ERROR")
     new_covariance = np.matmul((np.identity(3) - np.matmul(K_t, C)), covariance)
 
-    return new_state, new_covariance
+    return state, new_state, new_covariance

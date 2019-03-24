@@ -1,3 +1,5 @@
+from Tools.scripts.fixcid import err
+
 from src.helper import *
 from src.neuralnet import *
 from src.sensor import Sensor
@@ -10,7 +12,11 @@ class Robot:
         self.x = 100
         self.y = 150
         self.theta = 0
+        self.predictions = [[self.x, self.y, self.theta]]
         self.believe_states = [[self.x, self.y, self.theta]]
+        self.covariance = [[0.05, 0, 0],
+                           [0, 0.05, 0],
+                           [0, 0, 0.05]]
         self.radius = 30
         self.wheel_dist = self.radius * 2  # Distance between wheels
         self.is_odometry_based = is_odometry_based
@@ -37,7 +43,7 @@ class Robot:
         self.prev_theta = self.theta
         self.use_nn = use_nn
 
-        self.range_beacon_sensor = 200
+        self.range_beacon_sensor = 250
 
         # Fitness stats
         self.fitness = 0
@@ -158,6 +164,7 @@ class Robot:
     def update_position_velocity_based(self):
         """
         Update position and angle of the robot basing on velocity model.
+        Apply kalman filter to get the believe position
         """
         increment_matrix = np.array([[math.cos(self.theta), 0],
                                      [math.sin(self.theta), 0],
@@ -171,22 +178,18 @@ class Robot:
         self.update_fitness()
         beacons, distances = self.check_beacons()
         self.add_noise_beacons_distance(distances)
-        believe_state = trigonometry.calculate_position(distances, beacons)
+        observation = trigonometry.calculate_position(distances, beacons)
 
-        if len(believe_state) == 0:
-            believe_state = [self.believe_states[-1][0],
-                             self.believe_states[-1][1],
-                             self.believe_states[-1][2]] \
-                            + np.dot(increment_matrix, self.kinematical_parameters)
+        theta = self.theta
+        if len(observation) > 0:
+            observation = [observation[0], observation[1], theta]
+            prediction, believe_state, self.covariance = kalman_filter.kalman_filter(self.believe_states[-1], self.covariance,
+                                                                         self.kinematical_parameters, observation)
         else:
-            theta = self.theta
-            believe_state = [believe_state[0], believe_state[1], theta]
-            # kalman_filter.kalman_filter(believe_state, )
+            believe_state = self.believe_states[-1] + np.dot(increment_matrix, self.kinematical_parameters)
 
         self.believe_states.append(believe_state)
-        a = []
-
-
+        self.predictions.append(prediction)
 
     def update_position_odometry_based(self):
         """
@@ -321,11 +324,12 @@ class Robot:
             elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
                 self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.0001
 
-    def add_noise_beacons_distance(self, beacons_distances):
+    def add_noise_beacons_distance(self, beacons_distances, error_perc=0.05):
         """
         Add noise to the beacons information
         :param beacons_distances:
+        :param error_perc: standar deviation = distance * error_perc
         """
 
         for pos, d in enumerate(beacons_distances):
-            beacons_distances[pos] += d * np.random.normal() * 0.1
+            beacons_distances[pos] = np.random.normal(d, d * error_perc)
