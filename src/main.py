@@ -88,7 +88,7 @@ def main():
 
     # best_robot = Robot(g.WIDTH, g.HEIGHT, rooms.room_3)
     gui = GFX()
-    gui.set_odometry_based_model()
+    # gui.set_odometry_based_model()
     # best_robot.set_walls(rooms.get_base_room())
     # best_robot.set_walls(rooms.room_3)
     # best_robot.set_walls(rooms.room_5)
