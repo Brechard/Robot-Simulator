@@ -202,7 +202,7 @@ class GFX:
         for wall in self.wall_list:
             pygame.draw.line(self.screen, black, wall.p1, wall.p2)
 
-        beacons, _ = self.robot.check_beacons()
+        beacons, _, _ = self.robot.check_beacons()
         for beacon in beacons:
             pygame.draw.circle(self.screen, black, beacon[:2], 10, 0)
             pygame.draw.line(self.screen, green, (self.robot.x, self.robot.y), beacon[:2], 2)

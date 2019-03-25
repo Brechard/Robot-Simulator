@@ -1,5 +1,3 @@
-from Tools.scripts.fixcid import err
-
 from src.helper import *
 from src.neuralnet import *
 from src.sensor import Sensor
@@ -8,7 +6,7 @@ import kalman_filter
 
 
 class Robot:
-    def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False, is_odometry_based=False):
+    def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False, is_odometry_based=False, beacon_sensor_noise = 0.05):
         self.x = 100
         self.y = 150
         self.theta = 0
@@ -22,6 +20,7 @@ class Robot:
         self.is_odometry_based = is_odometry_based
         self.kinematical_parameters = [0, 0]  # left - [0], right - [1]
         self.beacons = []
+        self.beacon_sensor_noise = beacon_sensor_noise
         if is_odometry_based:
             self.kinematical_parameter_names = ['left wheel', 'right wheel']
         else:
@@ -57,6 +56,8 @@ class Robot:
         num_sensors = 12
         for i in range(num_sensors):
             self.sensors.append(Sensor(i * (2 * math.pi / num_sensors)))
+
+
 
     def set_odometry_based_model(self):
         self.is_odometry_based = True
@@ -100,13 +101,25 @@ class Robot:
         """
         detected_beacons = []
         distances = []
+        bearings = []
+
+        # Checking beacons in radius and calculating distance and bearing
         for beacon in self.beacons:
             d = distance(beacon, [self.x, self.y])
             if d < self.range_beacon_sensor:
                 detected_beacons.append(beacon)
                 distances.append(d)
+                bearing = self.get_bearing(beacon)
+                bearings.append(bearing)
 
-        return detected_beacons, distances
+        return detected_beacons, distances, bearings
+
+    def get_bearing(self, beacon):
+        """
+        Return the angle between orientation of a robot and relative angle between beacon
+        :return: angle
+        """
+        return math.atan2(beacon[1] - self.y, beacon[0] - self.x) - self.theta
 
     def get_sensor_values(self):
         list = []
@@ -176,20 +189,22 @@ class Robot:
         self.add_noise_kinematics()
         self.check_periodicity()
         self.update_fitness()
-        beacons, distances = self.check_beacons()
+        beacons, distances, angles = self.check_beacons()
         self.add_noise_beacons_distance(distances)
         observation = trigonometry.calculate_position(distances, beacons)
 
         theta = self.theta
         if len(observation) > 0:
             observation = [observation[0], observation[1], theta]
-            prediction, believe_state, self.covariance = kalman_filter.kalman_filter(self.believe_states[-1], self.covariance,
-                                                                         self.kinematical_parameters, observation)
+            prediction, believe_state, self.covariance = kalman_filter.kalman_filter(self.believe_states[-1],
+                                                                                     self.covariance,
+                                                                                     self.kinematical_parameters,
+                                                                                     observation)
         else:
             believe_state = self.believe_states[-1] + np.dot(increment_matrix, self.kinematical_parameters)
 
         self.believe_states.append(believe_state)
-        self.predictions.append(prediction)
+        # self.predictions.append(prediction)
 
     def update_position_odometry_based(self):
         """
@@ -324,7 +339,7 @@ class Robot:
             elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
                 self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.0001
 
-    def add_noise_beacons_distance(self, beacons_distances, error_perc=0.05):
+    def add_noise_beacons_distance(self, beacons_distances):
         """
         Add noise to the beacons information
         :param beacons_distances:
@@ -332,4 +347,12 @@ class Robot:
         """
 
         for pos, d in enumerate(beacons_distances):
-            beacons_distances[pos] = np.random.normal(d, d * error_perc)
+            beacons_distances[pos] = np.random.normal(d, d * self.beacon_sensor_noise)
+
+    def add_noise_beacons_bearing(self, beacon_bearing):
+        """
+        Add noise to the beacons information
+        :param beacon_bearing:
+        :param error_perc:
+        :return: error_perc: bearings = distance * error_perc
+        """
