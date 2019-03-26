@@ -2,12 +2,13 @@ from src.helper import *
 from src.neuralnet import *
 from src.sensor import Sensor
 import trigonometry
-import kalman_filter
+from kalman_filter import kalman_filter
+
 
 
 class Robot:
     def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False, is_odometry_based=False,
-                 beacon_sensor_noise = 0.10):
+                 beacon_sensor_noise=0.10):
         self.x = 100
         self.y = 150
         self.theta = 0
@@ -52,6 +53,7 @@ class Robot:
         self.n_visited_bins = 0
 
         self.nn = RNN(inputs=12, outputs=2, hidden_layer_size=6, weights=weights)
+        self.kalman_filter = kalman_filter()
 
         self.sensors = []
         num_sensors = 12
@@ -229,7 +231,7 @@ class Robot:
         print(math.degrees(self.observed_orientation))
         if len(self.observed_position) > 0:
             observation = [self.observed_position[0], self.observed_position[1], self.observed_orientation]
-            prediction, believe_state, self.covariance = kalman_filter.kalman_filter(self.believe_states[-1],
+            prediction, believe_state, self.covariance = self.kalman_filter.run_filter(self.believe_states[-1],
                                                                                      self.covariance,
                                                                                      self.kinematical_parameters,
                                                                                      observation)

@@ -2,13 +2,13 @@ import random
 
 from matplotlib import pyplot as plt
 
-import crossover_mutation
+from algorithms import crossover_mutation
 import main
 # from src.wall import Wall
-import rooms
-from src.gui import GFX
-from src.neuralnet import *
-from src.robot import Robot
+from model import rooms
+from view.gui import GFX
+from algorithms.neuralnet import *
+from model.robot import Robot
 
 NUM_THREADS = 4
 # NUM_THREADS = 1  # Set to 1 to disable multiprocessing
