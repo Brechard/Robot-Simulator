@@ -71,6 +71,9 @@ class Robot:
     def get_pos(self):
         return int(self.x), int(self.y)
 
+    def get_state(self):
+        return int(self.x), int(self.y), self.theta
+
     def check_sensors(self, collision=False):
         for sensor in self.sensors:
             sensor_bearing = (sensor.angle + self.theta) % (2 * math.pi)  # Sensor angle is relative to the robot

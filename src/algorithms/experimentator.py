@@ -4,6 +4,7 @@ that will result in a
 """
 
 from view.gui import GFX
+import matplotlib.pyplot as plt
 
 
 def run_observation_noise_experiment(Q, max_time, real_observation_noise):
@@ -18,10 +19,13 @@ def run_observation_noise_experiment(Q, max_time, real_observation_noise):
     gui.robot.beacon_sensor_noise = real_observation_noise
 
     # Run simulation
-    gui.main(draw=False, max_time=max_time, kill_when_stuck=False)
+    gui.main(draw=True, max_time=max_time, kill_when_stuck=False)
 
     # Get the values
+    plt.plot(gui.experiments.position_observed_error)
 
+import numpy as np
+default_Q_t = np.identity(3) * np.random.rand(3, 1) * 0.1
+default_R = np.identity(3) * np.random.rand(3, 1) * 0.1
 
-
-
+run_observation_noise_experiment(default_Q_t, 1000, default_Q_t)

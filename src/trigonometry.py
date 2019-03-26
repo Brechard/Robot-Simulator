@@ -10,6 +10,7 @@ def calculate_position_helper(distances, beacons):
 
     l = len(beacons)
     s = sum(distances)
+    assert l == len(distances)
     # compute weight vector for initial guess
     w = [((l - 1) * s) / (s - w) for w in distances]
     # get initial guess of point location
