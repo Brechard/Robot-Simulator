@@ -6,7 +6,8 @@ import kalman_filter
 
 
 class Robot:
-    def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False, is_odometry_based=False, beacon_sensor_noise = 0.05):
+    def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False, is_odometry_based=False,
+                 beacon_sensor_noise=0.05):
         self.x = 100
         self.y = 150
         self.theta = 0
@@ -56,8 +57,6 @@ class Robot:
         num_sensors = 12
         for i in range(num_sensors):
             self.sensors.append(Sensor(i * (2 * math.pi / num_sensors)))
-
-
 
     def set_odometry_based_model(self):
         self.is_odometry_based = True
@@ -121,6 +120,29 @@ class Robot:
         """
         return math.atan2(beacon[1] - self.y, beacon[0] - self.x) - self.theta
 
+    def get_observed_orientation(self, beacons, bearings, predicted_position):
+        """
+        Get the orientation basing on the value of predicted X, Y and the bearing
+        :param beacons
+        :param bearings: get
+        :param predicted_position: previous believe state + motion model
+        :return:
+        """
+
+        observed_orientations = []
+        for idx, beacon in enumerate(beacons):
+            # Calculate angle between the line connecting predicted position and beacon and X-axis
+            delta_x = beacon[0] - predicted_position[0]
+            delta_y = beacon[1] - predicted_position[1]
+
+            alpha =  math.atan2(delta_y, delta_x)
+
+            # Get the observed orientation from three angles
+            observed_orientation = check_periodicity(- bearings[idx] + alpha)
+            observed_orientations.append(observed_orientation)
+
+        return np.average(observed_orientations)
+
     def get_sensor_values(self):
         list = []
         for sensor in self.sensors:
@@ -176,42 +198,42 @@ class Robot:
             self.calculate_state()
         self.update_fitness()
 
-
-
     def update_position_velocity_based(self):
         """
         Update position and angle of the robot basing on velocity model.
         Apply kalman filter to get the believe position
         """
         self.increment_matrix = np.array([[math.cos(self.theta), 0],
-                                     [math.sin(self.theta), 0],
-                                     [0, 1]])
+                                          [math.sin(self.theta), 0],
+                                          [0, 1]])
 
         [self.x, self.y, self.theta] = [self.x, self.y, self.theta] + np.dot(self.increment_matrix,
                                                                              self.kinematical_parameters)
-        self.check_periodicity()
+        self.theta = check_periodicity(self.theta)
 
     def calculate_state(self):
         """
         Calculating state from the information obtained from the beacons. This state is then passed to the kalman filter.
         :return:
         """
-        beacons, distances, angles = self.check_beacons()
+        beacons, distances, bearings = self.check_beacons()
 
-        self.observation = trigonometry.calculate_position(distances, beacons)
+        prediction = self.believe_states[-1] + np.dot(self.increment_matrix, self.kinematical_parameters)
 
         self.add_noise_beacons_distance(distances)
+        self.add_noise_beacons_bearing(bearings)
 
+        self.observed_position = trigonometry.calculate_position(distances, beacons)
+        self.observed_orientation = self.get_observed_orientation(beacons, bearings, prediction[:2])
 
-        theta = self.theta
-        if len(self.observation) > 0:
-            observation = [self.observation[0], self.observation[1], theta]
+        print(math.degrees(self.observed_orientation))
+        if len(self.observed_position) > 0:
+            observation = [self.observed_position[0], self.observed_position[1], self.observed_orientation]
             prediction, believe_state, self.covariance = kalman_filter.kalman_filter(self.believe_states[-1],
                                                                                      self.covariance,
                                                                                      self.kinematical_parameters,
                                                                                      observation)
         else:
-            prediction = self.believe_states[-1] + np.dot(self.increment_matrix, self.kinematical_parameters)
             believe_state = prediction
 
         self.believe_states.append(believe_state)
@@ -256,18 +278,10 @@ class Robot:
             self.y = result[1]
             self.theta -= result[2]
             # print(R)
-            self.check_periodicity()
+            self.theta = check_periodicity(self.theta)
         else:
             self.x += self.kinematical_parameters[0] * math.cos(self.theta)
             self.y += self.kinematical_parameters[0] * math.sin(self.theta)
-
-
-    def check_periodicity(self):
-        # Reset degrees after 2 PI radians
-        if self.theta >= 2 * math.pi:
-            self.theta = self.theta - 2 * math.pi
-        elif self.theta <= -2 * math.pi:
-            self.theta = self.theta + 2 * math.pi
 
     def set_NN(self, NN):
         self.nn = NN
