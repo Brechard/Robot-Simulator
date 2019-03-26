@@ -9,6 +9,8 @@ from neuralnet import *
 from src.helper import *
 from src.robot import Robot
 from src.wall import Wall
+import time
+import helper
 
 WIDTH = 840
 HEIGHT = 600
@@ -21,14 +23,15 @@ dust = (128, 128, 128)
 blue = (20, 80, 155)
 red = (255, 0, 0)
 green = (11, 102, 35)
-yellow = (255, 255, 0)
+yellow = (230, 230, 52)
+orange = (255, 110, 20)
 green_sensor = (53, 98, 68)
 stats_height = 80
 pygame.font.init()
 font = pygame.font.SysFont('arial', 20)
 
 # parameters
-button_step = 0.05
+button_step = 5
 
 
 class GFX:
@@ -65,11 +68,12 @@ class GFX:
         # Init robot
         self.robot = Robot(WIDTH, HEIGHT, self.wall_list, weights)
         self.add_beacons()
+        self.stop = False
 
     def add_beacons(self, n_random_beacons=10):
         beacons = []
         beacon_step = 200
-        for i in range(int(WIDTH/beacon_step) + 1):
+        for i in range(int(WIDTH / beacon_step) + 1):
             for j in range(int(HEIGHT / beacon_step) + 1):
                 x = 20 + int(np.random.normal(i * beacon_step, 20))
                 y = 20 + int(np.random.normal(j * beacon_step, 20))
@@ -79,7 +83,6 @@ class GFX:
                 if y > HEIGHT - 20: y = HEIGHT - 20
                 beacons.append((x, y))
                 # print("Beacon appended", beacons[-1])
-
 
         self.robot.beacons = beacons
 
@@ -122,6 +125,12 @@ class GFX:
         self.last_time = datetime.now()
 
         for i in range(max_time):
+            while self.stop:
+                # Handle inputs
+                for events in pygame.event.get():
+                    self.stop_event(events)
+                continue
+
             # Handle inputs
             for events in pygame.event.get():
                 self.event(events)
@@ -139,6 +148,8 @@ class GFX:
             # Draw current state
             if draw:
                 self.draw(i)
+
+            time.sleep(0.1)
 
     def event(self, events):
         if events.type == QUIT:
@@ -163,9 +174,15 @@ class GFX:
                 self.robot.kinematical_parameters[0] -= button_step  # Both decrement
                 self.robot.kinematical_parameters[1] -= button_step  # Both decrement
             elif events.key == K_a:
-                self.robot.kinematical_parameters[1] -= button_step / 100  # Decrement angular velocity
+                self.robot.kinematical_parameters[1] -= button_step / 50  # Decrement angular velocity
             elif events.key == K_d:
-                self.robot.kinematical_parameters[1] += button_step / 100  # Increment angular velocity
+                self.robot.kinematical_parameters[1] += button_step / 50  # Increment angular velocity
+            elif events.key == K_p:
+                self.stop = True
+
+    def stop_event(self, events):
+        if events.type == KEYUP and events.key == K_p:
+            self.stop = False
 
     def update(self):
         """
@@ -192,12 +209,6 @@ class GFX:
             for pos in range(1, len(self.visited_arr)):
                 pygame.draw.line(self.screen, black, self.visited_arr[pos - 1], self.visited_arr[pos], 2)
 
-        for state in self.robot.predictions:
-            pygame.draw.circle(self.screen, red, [int(x) for x in state[:2]], 2, 0)
-
-        for state in self.robot.believe_states:
-            pygame.draw.circle(self.screen, dust, [int(x) for x in state[:2]], 2, 0)
-
         # Draw walls
         for wall in self.wall_list:
             pygame.draw.line(self.screen, black, wall.p1, wall.p2)
@@ -223,15 +234,79 @@ class GFX:
                          point_from_angle(self.robot.x, self.robot.y, self.robot.theta, self.robot.radius), 2)
 
         self.draw_kinematics(update)
-
         self.draw_positions()
-
         self.draw_performance()
+        self.draw_prediction()
+        self.draw_estimated()
+        self.draw_observed()
+
+        # x, y, width, height = self.robot.believe_states[-1][0], self.robot.believe_states[-1][1], \
+        #                       self.robot.covariance[0][0], self.robot.covariance[1][1]
+        # print(x, y, x + width, y + height)
+        # pygame.draw.ellipse(self.screen, black, [x, y, x + width, y + height], 1)
+
+        # pygame.draw.ellipse(self.screen, red, [500, 500, 100, 50], 1)
+        # pygame.draw.ellipse(self.screen, green, [500, 500, 2, 2], 1)
+        # pygame.draw.circle(self.screen, blue, [500, 500], 2, 0)
+
+        # self.draw_elipses()
 
         pygame.display.update()
 
-    def draw_kinematics(self, update):
+    def draw_elipses(self):
+        x, y = self.robot.believe_states[-1][:2]
+        # x, y = self.robot.x, self.robot.y
+        # width, height = 2 * x * 10, 2 * y * 10
+        width, height = 100, 200
 
+        surface = pygame.Surface((width, height))
+        size = (0, 0, width, height)
+
+        # drawing an ellipse onto the
+        pygame.draw.ellipse(surface, red, size)
+        left_up_corner = [int(x - width / 2), int(y - height / 2)]
+        print("left up corner", left_up_corner)
+
+        self.screen.blit(surface, left_up_corner)
+        pygame.draw.circle(self.screen, blue, left_up_corner, 10, 0)
+        pygame.draw.circle(self.screen, blue, [int(x), int(y)], 10, 0)
+
+    def draw_observed(self):
+        center_point = [int(x) for x in self.robot.observed_position[:2]]
+        end_point = helper.get_point_from_angle(center_point, self.robot.observed_orientation, 15)
+        pygame.draw.circle(self.screen, green, center_point, 16, 5)
+        pygame.draw.line(self.screen, green, center_point, end_point, 5)
+
+        text_surface = font.render("observed", False, red)
+        self.screen.blit(text_surface, (630, stats_height + HEIGHT - 40))
+
+        pygame.draw.circle(self.screen, green, (608, stats_height + HEIGHT - 27), 10, 4)
+        pygame.draw.line(self.screen, green, (608, stats_height + HEIGHT - 27), (616, stats_height + HEIGHT - 27), 4)
+
+    def draw_prediction(self):
+        center_point = [int(x) for x in self.robot.predictions[-1][:2]]
+        end_point = helper.get_point_from_angle(center_point, self.robot.predictions[-1][2], 15)
+        pygame.draw.circle(self.screen, orange, center_point, 16, 5)
+        pygame.draw.line(self.screen, orange, center_point, end_point, 5)
+
+        text_surface = font.render("estimated", False, red)
+        self.screen.blit(text_surface, (630, stats_height + HEIGHT - 80))
+        pygame.draw.circle(self.screen, orange, (608, stats_height + HEIGHT - 67), 10, 4)
+        pygame.draw.line(self.screen, orange, (608, stats_height + HEIGHT - 67), (616, stats_height + HEIGHT - 67), 4)
+
+    def draw_estimated(self):
+        # pygame.draw.circle(self.screen, dust, [int(x) for x in self.robot.believe_states[-1][:2]], 15, 5)
+        center_point = [int(x) for x in self.robot.believe_states[-1][:2]]
+        end_point = helper.get_point_from_angle(center_point, self.robot.believe_states[-1][2], 15)
+        pygame.draw.circle(self.screen, dust, center_point, 16, 5)
+        pygame.draw.line(self.screen, dust, center_point, end_point, 5)
+
+        text_surface = font.render("corrected", False, red)
+        self.screen.blit(text_surface, (630, stats_height + HEIGHT - 60))
+        pygame.draw.circle(self.screen, dust, (608, stats_height + HEIGHT - 47), 10, 4)
+        pygame.draw.line(self.screen, dust, (608, stats_height + HEIGHT - 47), (616, stats_height + HEIGHT - 47), 4)
+
+    def draw_kinematics(self, update):
         # Wheel speeds
         text_surface = font.render(
             self.robot.kinematical_parameter_names[0] + " {0:.4f}".format(self.robot.kinematical_parameters[0]), False,
@@ -262,7 +337,7 @@ class GFX:
         text_surface = font.render("cleaned_dust: " + str(self.robot.n_visited_bins), False, red)
         self.screen.blit(text_surface, (440, stats_height + HEIGHT - 40))
         text_surface = font.render("fitness: " + str(self.robot.fitness), False, red)
-        self.screen.blit(text_surface, (600, stats_height + HEIGHT - 80))
+        self.screen.blit(text_surface, (720, stats_height + HEIGHT - 80))
 
     def get_nn_weights(self):
         return self.robot.nn.flatten()

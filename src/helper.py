@@ -34,3 +34,15 @@ def check_periodicity(angle):
     elif angle <= -2 * math.pi:
         angle = angle + 2 * math.pi
     return angle
+
+
+def get_point_from_angle(point, angle, lenght):
+    """
+    Return a point given a starting point, the angle that it has to form with respect to X-axis and how far from that
+    point it has to be.
+    :param point: Initial point
+    :param angle: angle with respect to X-axis
+    :param lenght: How far from the initial point the final point must be
+    :return: array with [x, y]
+    """
+    return [point[0] + lenght * math.cos(angle), point[1] + lenght * math.sin(angle)]
