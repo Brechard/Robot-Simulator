@@ -358,7 +358,7 @@ class Robot:
                          or abs(self.kinematical_parameters[1]) > 0.01):
                 self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.01
             elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
-                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.007
+                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.01
 
         if np.random.random() < self.kinematics_error:
             if self.is_odometry_based \
@@ -366,7 +366,7 @@ class Robot:
                          or abs(self.kinematical_parameters[1]) > 0.01):
                 self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.01
             elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
-                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.0007
+                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.007
 
     def add_noise_beacons_distance(self, beacons_distances):
         """

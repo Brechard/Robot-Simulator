@@ -190,6 +190,9 @@ class GFX:
                 self.stop = True
 
     def stop_event(self, events):
+        if events.type == QUIT:
+            sys.exit(0)
+
         if events.type == KEYUP and events.key == K_p:
             self.stop = False
 

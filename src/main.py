@@ -97,6 +97,10 @@ def main():
     # best_robot.set_pos(130, 150, 0)
     # best_robot.set_pos(100, g.HEIGHT - 150, 145)
     # gui.set_robot(best_robot)
+    gui.robot.kinematics_error = 0.7
+    gui.robot.beacon_sensor_noise = 0.2
+    gui.robot.kalman_filter.Q_t = np.identity(3) * 2
+
     gui.main(draw=True, max_time=50000, kill_when_stuck=False)
 
 

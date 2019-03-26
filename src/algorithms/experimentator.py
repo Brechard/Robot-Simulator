@@ -24,12 +24,12 @@ def run_observation_noise_experiment(Q, max_time, real_observation_noise):
 
     gui.robot.beacon_sensor_noise = real_observation_noise
     gui.robot.kinematical_parameters = [1, 0]
-    gui.robot.beacon_sensor_noise = 0.1
+    # gui.robot.beacon_sensor_noise = 0.1
     gui.robot.kinematics_error = 0.1
     gui.robot.kalman_filter.R = np.identity(3) * 0.1
 
     # Run simulation
-    gui.main(draw=True, max_time=max_time, kill_when_stuck=False, use_steps=False)
+    gui.main(draw=False, max_time=max_time, kill_when_stuck=False, use_steps=False)
 
     gui.experiments.calculate_errors()
     errors = gui.experiments.calculate_average()
@@ -37,7 +37,7 @@ def run_observation_noise_experiment(Q, max_time, real_observation_noise):
     return errors
 
 
-Qs = np.linspace(0.1, 10, 10)
+Qs = np.linspace(0, 10, 50)
 Q_t = [np.identity(3) * (q ** 2) for q in Qs]
 errors = []
 
@@ -48,8 +48,8 @@ for i, Q in enumerate(Q_t):
 
 # Store in txt
 temp = np.asarray(errors).T
-plt.plot(Qs, temp[0], label="Error in X")
-plt.plot(Qs, temp[1], label="Error in Y")
+# temp = np.loadtxt("experiment.csv")
+plt.plot(Qs, (temp[0] + temp[1]))
 plt.xlabel("Variance")
 plt.ylabel("Error")
 plt.legend()
@@ -61,4 +61,4 @@ plt.ylabel("Error")
 plt.legend()
 plt.show()
 
-# np.savetxt("experiment.csv", temp)
+np.savetxt("experiment.csv", temp)
