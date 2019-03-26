@@ -230,7 +230,7 @@ class Robot:
         self.observed_position = trigonometry.calculate_position(distances, beacons)
         self.observed_orientation = self.get_observed_orientation(beacons, bearings, prediction[:2])
 
-        print(math.degrees(self.observed_orientation))
+
         if len(self.observed_position) > 0:
             observation = [self.observed_position[0], self.observed_position[1], self.observed_orientation]
             prediction, believe_state, self.covariance = self.kalman_filter.run_filter(self.believe_states[-1],
