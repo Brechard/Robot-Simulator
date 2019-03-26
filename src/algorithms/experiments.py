@@ -24,9 +24,9 @@ class Experiments:
         real_pos = self.position_real
         pred_pos = self.position_predicted
         kalman_pos = self.position_kalman
-        self.errors['observed'] = self.calculate_mean_squared_errors_normalized(real_pos, obs_pos)
-        self.errors['predicted'] = self.calculate_mean_squared_errors_normalized(real_pos, pred_pos)
-        self.errors['kalman'] = self.calculate_mean_squared_errors_normalized(real_pos, kalman_pos)
+        self.errors['observed'] = np.array(self.calculate_mean_squared_errors_normalized(real_pos, obs_pos))
+        self.errors['predicted'] = np.array(self.calculate_mean_squared_errors_normalized(real_pos, pred_pos))
+        self.errors['kalman'] = np.array(self.calculate_mean_squared_errors_normalized(real_pos, kalman_pos))
 
     def calculate_mean_squared_errors_normalized(self, calculated_position, real_position):
         result = []
@@ -35,3 +35,10 @@ class Experiments:
             result.append(error)
         variance = np.var(result)
         return [r ** 2 / variance for r in result]
+
+    def calculate_average(self):
+        self.position_real = np.array(self.position_real)
+        self.position_kalman = np.array(self.position_kalman)
+        self.average_errors = [(np.average((self.position_real[:, i] - self.position_kalman[:, i]) ** 2)) for i in
+                               range(3)]
+        return self.average_errors
