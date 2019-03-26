@@ -350,7 +350,7 @@ class GFX:
         self.screen.blit(text_surface, (440, stats_height + HEIGHT - 80))
         text_surface = font.render("cleaned_dust: " + str(self.robot.n_visited_bins), False, red)
         self.screen.blit(text_surface, (440, stats_height + HEIGHT - 60))
-        text_surface = font.render("fitness: " + str(self.robot.fitness), False, red)
+        text_surface = font.render("fitness: " + str(round(self.robot.fitness,2)), False, red)
         self.screen.blit(text_surface, (30, stats_height + HEIGHT - 40))
 
     def get_nn_weights(self):

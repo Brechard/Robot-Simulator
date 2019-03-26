@@ -28,6 +28,8 @@ class Experiments:
         self.errors['predicted'] = np.array(self.calculate_mean_squared_errors_normalized(real_pos, pred_pos))
         self.errors['kalman'] = np.array(self.calculate_mean_squared_errors_normalized(real_pos, kalman_pos))
 
+        self.errors['observed']
+
     def calculate_mean_squared_errors_normalized(self, calculated_position, real_position):
         result = []
         for idx in range(len(real_position)):

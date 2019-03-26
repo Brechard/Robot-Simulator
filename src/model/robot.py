@@ -20,6 +20,7 @@ class Robot:
         self.wheel_dist = self.radius * 2  # Distance between wheels
         self.is_odometry_based = is_odometry_based
         self.kinematical_parameters = [0, 0]  # left - [0], right - [1]
+        self.kinematics_error = 0.1
         self.beacons = []
         self.beacon_sensor_noise = beacon_sensor_noise
         if is_odometry_based:
@@ -351,21 +352,21 @@ class Robot:
         self.walls = walls
 
     def add_noise_kinematics(self):
-        if np.random.random() < 0.01:
+        if np.random.random() < self.kinematics_error:
             if self.is_odometry_based \
                     and (abs(self.kinematical_parameters[0]) > 0.01
                          or abs(self.kinematical_parameters[1]) > 0.01):
                 self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.01
             elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
-                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.001
+                self.kinematical_parameters[0] += (np.random.random() - 0.5) * 0.007
 
-        if np.random.random() < 0.01:
+        if np.random.random() < self.kinematics_error:
             if self.is_odometry_based \
                     and (abs(self.kinematical_parameters[0]) > 0.01
                          or abs(self.kinematical_parameters[1]) > 0.01):
                 self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.01
             elif not self.is_odometry_based and abs(self.kinematical_parameters[0]) > 0.01:
-                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.0001
+                self.kinematical_parameters[1] += (np.random.random() - 0.5) * 0.0007
 
     def add_noise_beacons_distance(self, beacons_distances):
         """
