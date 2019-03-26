@@ -11,7 +11,7 @@ from src.model.robot import Robot
 from src.model.wall import Wall
 import time
 import helper
-from model.experiments import Experiments
+from algorithms.experiments import Experiments
 
 WIDTH = 840
 HEIGHT = 600
@@ -151,11 +151,12 @@ class GFX:
             if draw:
                 self.draw(i)
 
-            obs_pos = np.array([self.robot.observed_position[0], self.robot.observed_position[1], self.robot.observed_orientation])
-            self.experiments.calculate_errors(real_pos=self.robot.get_state(),
-                                              obs_pos=obs_pos,
-                                              pred_pos=self.robot.predictions[-1],
-                                              kalman_pos=self.robot.believe_states[-1])
+            obs_pos = np.array(
+                [self.robot.observed_position[0], self.robot.observed_position[1], self.robot.observed_orientation])
+            self.experiments.store_values(real_pos=self.robot.get_state(),
+                                          obs_pos=obs_pos,
+                                          pred_pos=self.robot.predictions[-1],
+                                          kalman_pos=self.robot.believe_states[-1])
             if use_steps:
                 time.sleep(0.1)
 
