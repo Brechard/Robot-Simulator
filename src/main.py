@@ -50,11 +50,11 @@ def load_best_weights(dir):
     return np.loadtxt(dir + '/best_robot.txt', dtype=float)
 
 
-import genetic_algorithm as g
-from src.gui import GFX
-from src.robot import Robot
+from algorithms import genetic_algorithm as g
+from src.view.gui import GFX
+from src.model.robot import Robot
 
-import rooms
+import model.rooms as rooms
 
 
 def main():

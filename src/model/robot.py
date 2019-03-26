@@ -1,9 +1,8 @@
 from src.helper import *
-from src.neuralnet import *
-from src.sensor import Sensor
+from src.algorithms.neuralnet import *
+from src.model.sensor import Sensor
 import trigonometry
-from kalman_filter import kalman_filter
-
+from algorithms.kalman_filter import kalman_filter
 
 
 class Robot:
@@ -137,7 +136,7 @@ class Robot:
             delta_x = beacon[0] - predicted_position[0]
             delta_y = beacon[1] - predicted_position[1]
 
-            alpha =  math.atan2(delta_y, delta_x)
+            alpha = math.atan2(delta_y, delta_x)
 
             # Get the observed orientation from three angles
             observed_orientation = check_periodicity(- bearings[idx] + alpha)
@@ -232,9 +231,9 @@ class Robot:
         if len(self.observed_position) > 0:
             observation = [self.observed_position[0], self.observed_position[1], self.observed_orientation]
             prediction, believe_state, self.covariance = self.kalman_filter.run_filter(self.believe_states[-1],
-                                                                                     self.covariance,
-                                                                                     self.kinematical_parameters,
-                                                                                     observation)
+                                                                                       self.covariance,
+                                                                                       self.kinematical_parameters,
+                                                                                       observation)
         else:
             believe_state = prediction
 
@@ -382,5 +381,4 @@ class Robot:
         :return: error_perc: bearings = distance * error_perc
         """
         for pos, phi in enumerate(beacon_bearings):
-            test = phi* self.beacon_sensor_noise
             beacon_bearings[pos] = np.random.normal(phi, abs(phi * self.beacon_sensor_noise))

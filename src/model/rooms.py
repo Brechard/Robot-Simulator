@@ -1,4 +1,4 @@
-from src.wall import Wall
+from src.model.wall import Wall
 
 WIDTH = 840
 HEIGHT = 600

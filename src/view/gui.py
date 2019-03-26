@@ -5,10 +5,10 @@ import pygame
 from pygame.locals import *
 import numpy as np
 
-from neuralnet import *
+from algorithms.neuralnet import *
 from src.helper import *
-from src.robot import Robot
-from src.wall import Wall
+from src.model.robot import Robot
+from src.model.wall import Wall
 import time
 import helper
 
@@ -26,7 +26,7 @@ green = (11, 102, 35)
 yellow = (230, 230, 52)
 orange = (255, 110, 20)
 green_sensor = (53, 98, 68)
-stats_height = 80
+stats_height = 100
 pygame.font.init()
 font = pygame.font.SysFont('arial', 20)
 
@@ -278,10 +278,10 @@ class GFX:
         pygame.draw.line(self.screen, green, center_point, end_point, 5)
 
         text_surface = font.render("observed", False, red)
-        self.screen.blit(text_surface, (630, stats_height + HEIGHT - 40))
+        self.screen.blit(text_surface, (630, stats_height + HEIGHT - 60))
 
-        pygame.draw.circle(self.screen, green, (608, stats_height + HEIGHT - 27), 10, 4)
-        pygame.draw.line(self.screen, green, (608, stats_height + HEIGHT - 27), (616, stats_height + HEIGHT - 27), 4)
+        pygame.draw.circle(self.screen, green, (608, stats_height + HEIGHT - 47), 10, 4)
+        pygame.draw.line(self.screen, green, (608, stats_height + HEIGHT - 47), (616, stats_height + HEIGHT - 47), 4)
 
     def draw_prediction(self):
         center_point = [int(x) for x in self.robot.predictions[-1][:2]]
@@ -290,9 +290,9 @@ class GFX:
         pygame.draw.line(self.screen, orange, center_point, end_point, 5)
 
         text_surface = font.render("estimated", False, red)
-        self.screen.blit(text_surface, (630, stats_height + HEIGHT - 80))
-        pygame.draw.circle(self.screen, orange, (608, stats_height + HEIGHT - 67), 10, 4)
-        pygame.draw.line(self.screen, orange, (608, stats_height + HEIGHT - 67), (616, stats_height + HEIGHT - 67), 4)
+        self.screen.blit(text_surface, (630, stats_height + HEIGHT - 100))
+        pygame.draw.circle(self.screen, orange, (608, stats_height + HEIGHT - 87), 10, 4)
+        pygame.draw.line(self.screen, orange, (608, stats_height + HEIGHT - 87), (616, stats_height + HEIGHT - 87), 4)
 
     def draw_estimated(self):
         # pygame.draw.circle(self.screen, dust, [int(x) for x in self.robot.believe_states[-1][:2]], 15, 5)
@@ -302,42 +302,47 @@ class GFX:
         pygame.draw.line(self.screen, dust, center_point, end_point, 5)
 
         text_surface = font.render("corrected", False, red)
-        self.screen.blit(text_surface, (630, stats_height + HEIGHT - 60))
-        pygame.draw.circle(self.screen, dust, (608, stats_height + HEIGHT - 47), 10, 4)
-        pygame.draw.line(self.screen, dust, (608, stats_height + HEIGHT - 47), (616, stats_height + HEIGHT - 47), 4)
+        self.screen.blit(text_surface, (630, stats_height + HEIGHT - 80))
+        pygame.draw.circle(self.screen, dust, (608, stats_height + HEIGHT - 67), 10, 4)
+        pygame.draw.line(self.screen, dust, (608, stats_height + HEIGHT - 67), (616, stats_height + HEIGHT - 67), 4)
 
     def draw_kinematics(self, update):
         # Wheel speeds
         text_surface = font.render(
             self.robot.kinematical_parameter_names[0] + " {0:.4f}".format(self.robot.kinematical_parameters[0]), False,
             red)  # Left
-        self.screen.blit(text_surface, (30, stats_height + HEIGHT - 80))
+        self.screen.blit(text_surface, (30, stats_height + HEIGHT - 100))
         text_surface = font.render(
             self.robot.kinematical_parameter_names[1] + " {0:.4f}".format(self.robot.kinematical_parameters[1]), False,
             red)  # Right
-        self.screen.blit(text_surface, (30, stats_height + HEIGHT - 60))
+        self.screen.blit(text_surface, (30, stats_height + HEIGHT - 80))
         text_surface = font.render("updates: " + str(update), False, red)
-        self.screen.blit(text_surface, (30, stats_height + HEIGHT - 40))
+        self.screen.blit(text_surface, (30, stats_height + HEIGHT - 60))
 
     def draw_positions(self):
         # Positions
         text_surface = font.render("angle: {0:.2f}".format(math.degrees(self.robot.theta)), False, red)  # Angle
-        self.screen.blit(text_surface, (300, stats_height + HEIGHT - 80))
+        self.screen.blit(text_surface, (300, stats_height + HEIGHT - 100))
         text_surface = font.render("position y: " + str(int(self.robot.y)), False, red)
-        self.screen.blit(text_surface, (300, stats_height + HEIGHT - 60))
+        self.screen.blit(text_surface, (300, stats_height + HEIGHT - 80))
         text_surface = font.render("position x: " + str(int(self.robot.x)), False, red)
+        self.screen.blit(text_surface, (300, stats_height + HEIGHT - 60))
+        if self.stop:
+            text_surface = font.render("use key \"p\" to resume", False, red)
+        else:
+            text_surface = font.render("use key \"p\" to pause", False, red)
         self.screen.blit(text_surface, (300, stats_height + HEIGHT - 40))
 
     def draw_performance(self):
         # Draw performance
         text_surface = font.render("not_moved: " + str(self.robot.n_not_moved), False, red)
-        self.screen.blit(text_surface, (440, stats_height + HEIGHT - 80))
+        self.screen.blit(text_surface, (440, stats_height + HEIGHT - 100))
         text_surface = font.render("collisions: " + str(self.robot.n_collisions), False, red)
-        self.screen.blit(text_surface, (440, stats_height + HEIGHT - 60))
+        self.screen.blit(text_surface, (440, stats_height + HEIGHT - 80))
         text_surface = font.render("cleaned_dust: " + str(self.robot.n_visited_bins), False, red)
-        self.screen.blit(text_surface, (440, stats_height + HEIGHT - 40))
+        self.screen.blit(text_surface, (440, stats_height + HEIGHT - 60))
         text_surface = font.render("fitness: " + str(self.robot.fitness), False, red)
-        self.screen.blit(text_surface, (720, stats_height + HEIGHT - 80))
+        self.screen.blit(text_surface, (30, stats_height + HEIGHT - 40))
 
     def get_nn_weights(self):
         return self.robot.nn.flatten()
