@@ -7,7 +7,7 @@ import kalman_filter
 
 class Robot:
     def __init__(self, WIDTH, HEIGHT, walls, weights=None, SCALE=40, use_nn=False, is_odometry_based=False,
-                 beacon_sensor_noise=0.05):
+                 beacon_sensor_noise = 0.10):
         self.x = 100
         self.y = 150
         self.theta = 0
@@ -373,10 +373,12 @@ class Robot:
         for pos, d in enumerate(beacons_distances):
             beacons_distances[pos] = np.random.normal(d, d * self.beacon_sensor_noise)
 
-    def add_noise_beacons_bearing(self, beacon_bearing):
+    def add_noise_beacons_bearing(self, beacon_bearings):
         """
         Add noise to the beacons information
         :param beacon_bearing:
-        :param error_perc:
         :return: error_perc: bearings = distance * error_perc
         """
+        for pos, phi in enumerate(beacon_bearings):
+            test = phi* self.beacon_sensor_noise
+            beacon_bearings[pos] = np.random.normal(phi, abs(phi * self.beacon_sensor_noise))
