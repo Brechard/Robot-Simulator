@@ -117,7 +117,7 @@ class GFX:
             image.set_colorkey(color)
         return image
 
-    def main(self, draw, kill_when_stuck=False, max_time=100):
+    def main(self, draw, kill_when_stuck=False, max_time=100, use_steps=True):
         clock = pygame.time.Clock()
         # background = load_image("../images/background.png")
         if not draw:
@@ -156,8 +156,8 @@ class GFX:
                                               obs_pos=obs_pos,
                                               pred_pos=self.robot.predictions[-1],
                                               kalman_pos=self.robot.believe_states[-1])
-
-            time.sleep(0.1)
+            if use_steps:
+                time.sleep(0.1)
 
     def event(self, events):
         if events.type == QUIT:
